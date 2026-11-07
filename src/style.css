@@ -1,0 +1,380 @@
+/* One dark theme, in the spirit of a 3Blue1Brown video: near-black, warm ink, a few calm colours.
+   Method colours were checked with a colour-vision validator against --bg (all pairs pass). */
+:root {
+  color-scheme: dark;
+  --bg: #141414;
+  --surface: #1b1b1a;
+  --ink: #ece8df;
+  --ink-2: #b9b4aa;
+  --muted: #8a857c;
+  --line: #36342f;
+  --focus: #e8c547; /* the thing happening right now, and the current policy */
+  --good: #83c167;
+  --bad: #fc6255;
+
+  --scc_karp: #4a9be0;
+  --cascade: #3aaa78;
+  --howard: #d17a2a;
+
+  --serif: "KaTeX_Main", "Latin Modern Roman", "CMU Serif", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--ink);
+  text-decoration-color: var(--muted);
+  text-underline-offset: 3px;
+}
+
+h1,
+h2 {
+  font-weight: 400;
+  line-height: 1.2;
+  margin: 0 0 0.4em;
+}
+
+h1 {
+  font-size: clamp(30px, 6vw, 46px);
+}
+
+h2 {
+  font-size: 24px;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+header.hero {
+  padding: 56px 0 24px;
+}
+
+.lede {
+  color: var(--ink-2);
+  max-width: 40em;
+}
+
+.small {
+  font-size: 15px;
+  color: var(--muted);
+}
+
+nav.top {
+  display: flex;
+  gap: 18px;
+  padding: 16px 0 0;
+  font-family: var(--sans);
+  font-size: 14px;
+}
+
+nav.top a[aria-current="page"] {
+  text-decoration: none;
+  color: var(--focus);
+}
+
+/* ---- the graph ------------------------------------------------------------------- */
+
+.graph {
+  position: relative;
+  width: 100%;
+}
+
+.graph svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.graph .labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.graph .label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  color: var(--ink-2);
+  transition: opacity 400ms var(--ease);
+}
+
+.graph .label.tag {
+  font-family: var(--sans);
+  font-size: 0.72em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.graph .label.tag.working {
+  color: var(--focus);
+}
+
+/* Frames only change classes; these transitions do the animating. */
+.hull,
+.edge,
+.state circle,
+.state text {
+  transition:
+    stroke 500ms var(--ease),
+    stroke-width 500ms var(--ease),
+    fill 500ms var(--ease),
+    opacity 500ms var(--ease);
+}
+
+.hull {
+  fill: var(--surface);
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.hull.working {
+  stroke: var(--focus);
+  stroke-width: 2.5;
+}
+
+.hull.solved {
+  stroke: var(--ink-2);
+}
+
+.hull.skipped {
+  fill: none;
+  stroke: var(--muted);
+  stroke-dasharray: 5 5;
+}
+
+.hull.trivial {
+  fill: none;
+  stroke: var(--line);
+  stroke-dasharray: 2 4;
+}
+
+.edge {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.4;
+  opacity: 0.75;
+}
+
+.edge.policy {
+  stroke: var(--focus);
+  stroke-width: 2.6;
+  opacity: 1;
+}
+
+.weight {
+  font-family: var(--serif);
+  font-size: 12px;
+  fill: var(--muted);
+  text-anchor: middle;
+  dominant-baseline: central;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+}
+
+.state circle {
+  fill: var(--bg);
+  stroke: var(--ink);
+  stroke-width: 1.6;
+}
+
+.state text {
+  font-family: var(--serif);
+  font-size: 13px;
+  fill: var(--ink);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+.state.dim circle {
+  stroke: var(--muted);
+}
+
+.state.dim text {
+  fill: var(--muted);
+}
+
+/* ---- captions, Karp table, bound chart --------------------------------------------- */
+
+.caption {
+  min-height: 3.2em;
+  color: var(--ink);
+  transition: opacity 300ms var(--ease);
+}
+
+.detail {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
+}
+
+.detail:empty {
+  display: none;
+}
+
+.panel-title {
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+table.karp {
+  border-collapse: collapse;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+table.karp th,
+table.karp td {
+  padding: 2px 10px;
+  text-align: right;
+}
+
+table.karp th {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+table.karp tr.new td {
+  color: var(--focus);
+  animation: arrive 500ms var(--ease);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.bound-chart text {
+  font-family: var(--serif);
+  font-size: 13px;
+  fill: var(--ink-2);
+}
+
+.bound-chart .axis {
+  stroke: var(--line);
+}
+
+.bound-chart .exit {
+  stroke: var(--ink-2);
+  stroke-dasharray: 4 4;
+}
+
+.bound-chart .u-line {
+  fill: none;
+  stroke: var(--focus);
+  stroke-width: 2;
+}
+
+.bound-chart .u-dot {
+  fill: var(--focus);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.bound-chart .u-dot.passes {
+  fill: var(--good);
+}
+
+/* ---- controls ---------------------------------------------------------------------- */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.controls button {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 999px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  border-color: var(--ink-2);
+}
+
+.controls button:focus-visible,
+.controls input:focus-visible,
+.picker button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.controls input[type="range"] {
+  flex: 1;
+  accent-color: var(--focus);
+  min-width: 80px;
+}
+
+.controls .readout {
+  min-width: 7.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+footer {
+  margin-top: 80px;
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+footer img {
+  width: 112px;
+  height: 112px;
+  border-radius: 8px;
+  background: var(--ink);
+  padding: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
