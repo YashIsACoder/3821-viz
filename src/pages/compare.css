@@ -176,6 +176,20 @@ button.open {
   display: none;
 }
 
+/* Four methods fit as a 2 × 2 grid on a phone, so none hides off the edge. */
+@media (max-width: 699px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: visible;
+  }
+
+  .tabs button {
+    justify-content: center;
+    padding: 9px 8px;
+  }
+}
+
 .tabs button,
 .chip-m {
   appearance: none;

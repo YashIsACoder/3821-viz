@@ -6,13 +6,4 @@ export const NAMES: Record<string, string> = {
   howard: "Howard",
 };
 
-// For tight spots: "Karp" rather than "SCC + Karp".
-export const SHORT: Record<string, string> = {
-  scc_karp: "Karp",
-  cascade: "Cascade",
-  hybrid: "Hybrid",
-  howard: "Howard",
-};
-
 export const nameOf = (m: string) => NAMES[m] ?? m;
-export const shortNameOf = (m: string) => SHORT[m] ?? m;

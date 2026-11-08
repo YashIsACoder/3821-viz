@@ -100,6 +100,10 @@ code {
   color: var(--muted);
 }
 
+p.small {
+  max-width: 60em;
+}
+
 .nowrap {
   white-space: nowrap;
 }
