@@ -1,6 +1,6 @@
 // The comparison charts on the race page.
 //
-//   scoreboard     every graph, every method: total work as bars, one card per graph
+//   scoreboard     every graph, every method: total work on one log axis (a dot plot)
 //   ProgressChart  for one graph: states settled against work done, one step line per method
 //   workMatrix     for one graph: how much work each SCC cost each SCC-based method
 //
@@ -10,7 +10,6 @@ import type { Bundle, IndexEntry, Method } from "../lib/types";
 
 export interface MethodInfo {
   name: (m: Method) => string;
-  short: (m: Method) => string; // for tight spots: "Karp" rather than "SCC + Karp"
   colour: (m: Method) => string;
 }
 
@@ -18,37 +17,92 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 // ---- scoreboard --------------------------------------------------------------------------
 
-// One card per graph: a bar per method, scaled to the slowest method on that graph, with the
-// number beside it. Cards rather than one chart, so a phone can show them a row at a time.
-export function scoreboard(graphs: IndexEntry[], methods: Method[], info: MethodInfo, current: string): string {
-  return graphs
+// The board is drawn at the width it is shown at, so text stays the size of the page's text
+// instead of growing and shrinking with the screen. Narrow: title above the dots. Wide: titles
+// in a column on the left, like a table.
+export function scoreboard(graphs: IndexEntry[], methods: Method[], info: MethodInfo, current: string, width: number) {
+  const W = Math.max(280, Math.round(width));
+  const wide = W >= 640;
+  const r = 6;
+  const gap = 2 * r + 4; // centre to centre, so dots never touch
+  const plotL = wide ? 310 : 10;
+  const plotR = W - 22;
+  const all = graphs.flatMap((g) => methods.map((m) => g.work[m]).filter((w) => w > 0));
+  // Fit the axis to the data, with gridlines at 1, 2, 5, 10, 20, 50, ... so it has no empty end.
+  const lo = Math.min(...all) / 1.3;
+  const hi = Math.max(...all) * 1.3;
+  const x = (w: number) => plotL + ((Math.log10(w) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (plotR - plotL);
+  const ticks: number[] = [];
+  for (let p = Math.pow(10, Math.floor(Math.log10(lo))); p <= hi; p *= 10) {
+    for (const t of [p, 2 * p, 5 * p]) if (t >= lo && t <= hi) ticks.push(t);
+  }
+  const major = (t: number) => Number.isInteger(Math.log10(t));
+
+  const axis =
+    `<svg class="score-axis" width="${W}" height="22" viewBox="0 0 ${W} 22" aria-hidden="true">` +
+    ticks.map((t) => `<text class="tick" x="${x(t)}" y="15" text-anchor="middle">${t.toLocaleString("en")}</text>`).join("") +
+    (wide ? `<text class="tick" x="${plotL - 14}" y="15" text-anchor="end">relaxations</text>` : "") +
+    `</svg>`;
+
+  let y = 0;
+  const rows = graphs
     .map((g) => {
       const works = methods.map((m) => g.work[m]);
       const best = Math.min(...works);
-      const most = Math.max(1, ...works);
-      const tie = works.every((w) => w === best);
-      const bars = methods
-        .map((m) => {
-          const w = g.work[m];
-          const least = w === best && !tie;
-          return (
-            `<span class="bar-name">${esc(info.short(m))}</span>` +
-            `<span class="bar-track"><span class="bar" style="--c:${info.colour(m)}; width:${Math.max(2, (100 * w) / most)}%"></span></span>` +
-            `<span class="bar-n${least ? " least" : ""}">${w}</span>`
-          );
-        })
-        .join("");
-      const sccs = `${g.sccs} SCC${g.sccs === 1 ? "" : "s"}`;
-      return (
-        `<li><button type="button" class="card${g.id === current ? " current" : ""}" data-id="${g.id}"` +
-        `${g.id === current ? ' aria-current="true"' : ""}>` +
-        `<span class="card-head"><span class="card-title">${esc(g.title)}</span>` +
-        `<span class="card-meta">${g.n} states · ${sccs}${tie ? " · all tie" : ""}</span></span>` +
-        `<span class="bars">${bars}</span>` +
-        `</button></li>`
+      const winners = methods.filter((m) => g.work[m] === best);
+
+      // Dots that would touch form a cluster, stacked in the key's order (blue, green, pink, orange),
+      // so a tie reads as a column and the order is the same on every row.
+      const sorted = [...methods].sort((a, b) => g.work[a] - g.work[b]);
+      const clusters: Method[][] = [];
+      let lastX = -Infinity;
+      for (const m of sorted) {
+        const cx = x(g.work[m]);
+        if (cx - lastX < gap) clusters[clusters.length - 1].push(m);
+        else clusters.push([m]);
+        lastX = cx;
+      }
+      const placed = clusters.flatMap((c) =>
+        c
+          .sort((a, b) => methods.indexOf(a) - methods.indexOf(b))
+          .map((m, i) => ({ m, cx: x(g.work[m]), lane: i - (c.length - 1) / 2 })),
       );
+      const lanes = placed.map((p) => p.lane);
+      const up = -Math.min(0, ...lanes);
+      const down = Math.max(0, ...lanes);
+      const band = (up + down + 1) * gap + 8;
+
+      const head = wide ? 0 : 44;
+      const h = Math.max(wide ? 58 : 0, head + band + 6);
+      const cy = wide ? y + h / 2 + (up - down) * (gap / 2) : y + head + 4 + gap / 2 + up * gap;
+      const bandTop = wide ? y + 4 : y + head;
+      const grid = ticks
+        .map((t) => `<line class="grid${major(t) ? " major" : ""}" x1="${x(t)}" x2="${x(t)}" y1="${bandTop}" y2="${wide ? y + h - 4 : bandTop + band}"/>`)
+        .join("");
+      const dots = placed
+        .map((p) => `<circle class="dot" cx="${p.cx}" cy="${cy + p.lane * gap}" r="${r}" fill="${info.colour(p.m)}"><title>${esc(info.name(p.m))}: ${g.work[p.m]} relaxations</title></circle>`)
+        .join("");
+      const names = winners.map((m) => info.name(m).replace(/ \(ours\)/, ""));
+      const least =
+        winners.length === methods.length
+          ? `all tie at ${best}`
+          : `least work: ${names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0]} (${best})`;
+      const titleY = wide ? y + h / 2 - 3 : y + 20;
+      const label =
+        `<text class="name" x="${wide ? 14 : plotL}" y="${titleY}">${esc(g.title)}</text>` +
+        `<text class="best" x="${wide ? 14 : plotL}" y="${titleY + 18}">${esc(least)}</text>`;
+      const row =
+        `<g class="row${g.id === current ? " current" : ""}" data-id="${g.id}" tabindex="0" role="button" aria-label="Show ${esc(g.title)}: ${esc(least)}">` +
+        `<rect class="hit" x="1" y="${y + 1}" width="${W - 2}" height="${h - 2}" rx="10"/>` +
+        grid + label + dots +
+        `</g>`;
+      y += h + 4;
+      return row;
     })
     .join("");
+
+  const board = `<svg class="scoreboard" width="${W}" height="${y}" viewBox="0 0 ${W} ${y}" role="group" aria-label="Relaxations per method on every graph">${rows}</svg>`;
+  return { axis, board };
 }
 
 // ---- progress chart ----------------------------------------------------------------------
@@ -171,7 +225,7 @@ export function workMatrix(bundle: Bundle, methods: Method[], info: MethodInfo):
   const most = Math.max(1, ...sccBased.flatMap((m) => [...per.get(m)!.values()].map((c) => c.work)));
   const comps = bundle.sccs.comps;
 
-  const head = sccBased.map((m) => `<th scope="col"><span class="swatch" style="--c:${info.colour(m)}"></span>${esc(info.short(m))}</th>`).join("");
+  const head = sccBased.map((m) => `<th scope="col"><span class="swatch" style="--c:${info.colour(m)}"></span>${esc(info.name(m))}</th>`).join("");
   const body = comps
     .map((states, c) => {
       const cells = sccBased
@@ -184,7 +238,7 @@ export function workMatrix(bundle: Bundle, methods: Method[], info: MethodInfo):
           return `<td><span class="mini" style="--c:${info.colour(m)}; width:${width}%"></span><span class="num">${cell.work}</span></td>`;
         })
         .join("");
-      return `<tr><th scope="row">SCC ${c}<span class="small">${states.length} state${states.length === 1 ? "" : "s"}</span></th>${cells}</tr>`;
+      return `<tr><th scope="row">SCC ${c}<span class="small"> · ${states.length} state${states.length === 1 ? "" : "s"}</span></th>${cells}</tr>`;
     })
     .join("");
 

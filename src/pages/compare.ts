@@ -6,7 +6,7 @@
 import "katex/dist/katex.min.css";
 import "../style.css";
 import "./compare.css";
-import { nameOf, shortNameOf } from "../lib/methods";
+import { nameOf } from "../lib/methods";
 import { frameAtWork, frames, type Frame } from "../lib/timeline";
 import { loadBundle, loadIndex, methodsOf, METHODS, toBundle, type Bundle, type IndexEntry, type Method } from "../lib/types";
 import { rich } from "../render/caption";
@@ -24,7 +24,6 @@ const ABOUT: Record<string, string> = {
 };
 const info: MethodInfo = {
   name: nameOf,
-  short: shortNameOf,
   colour: (m) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)"),
 };
 
@@ -38,14 +37,13 @@ let currentId = "";
 
 function drawScoreboard() {
   const methods = METHODS.filter((m) => graphs.every((g) => g.work[m] !== undefined));
+  $("#method-key").innerHTML = methods
+    .map((m) => `<span class="key-chip"><span class="swatch" style="--c:${info.colour(m)}"></span>${info.name(m)}</span>`)
+    .join("");
   const board = $("#scoreboard");
-  board.innerHTML = scoreboard(graphs, methods, info, currentId);
-  // In the swipeable row on a phone, bring the current graph into view without moving the page.
-  const card = board.querySelector<HTMLElement>(".card.current");
-  if (card && board.scrollWidth > board.clientWidth) {
-    const pad = parseFloat(getComputedStyle(board).paddingLeft);
-    board.scrollLeft = card.parentElement!.offsetLeft - board.offsetLeft - pad;
-  }
+  const { axis, board: svg } = scoreboard(graphs, methods, info, currentId, board.clientWidth);
+  $("#score-axis").innerHTML = axis;
+  board.innerHTML = svg;
 }
 
 function showGraph(bundle: Bundle) {
@@ -207,9 +205,24 @@ async function main() {
   graphs = index.graphs;
   $("#backend").textContent = `Data from dmdp at ${index.backend.commit}.`;
 
-  $("#scoreboard").addEventListener("click", (event) => {
-    const card = (event.target as Element).closest<HTMLElement>(".card");
-    if (card?.dataset.id) select(card.dataset.id, true);
+  const board = $("#scoreboard");
+  const choose = (event: Event) => {
+    const row = (event.target as Element).closest<SVGGElement>("g.row");
+    if (row?.dataset.id) select(row.dataset.id, true);
+  };
+  board.addEventListener("click", choose);
+  board.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      choose(event);
+    }
+  });
+  // Redraw at the new width, but only when the width really changed (phones resize on scroll).
+  let drawnAt = board.clientWidth;
+  window.addEventListener("resize", () => {
+    if (board.clientWidth === drawnAt || !graphs.length) return;
+    drawnAt = board.clientWidth;
+    drawScoreboard();
   });
 
   const src = params.get("src");

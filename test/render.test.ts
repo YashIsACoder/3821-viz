@@ -56,15 +56,29 @@ describe("opening your own runs", () => {
 
 describe("the scoreboard", () => {
   const index = JSON.parse(readFileSync("public/data/index.json", "utf8"));
-  const info = { name: (m: string) => m, short: (m: string) => m, colour: () => "red" };
+  const info = { name: (m: string) => m, colour: () => "red" };
 
-  it("has a card per graph and marks the least work", () => {
-    const list = document.createElement("ol");
-    list.innerHTML = scoreboard(index.graphs, ["scc_karp", "cascade", "hybrid", "howard"], info, "chain-rise");
-    expect(list.querySelectorAll(".card")).toHaveLength(index.graphs.length);
-    const rise = list.querySelector<HTMLElement>('[data-id="chain-rise"]')!;
-    expect(rise.getAttribute("aria-current")).toBe("true");
-    expect([...rise.querySelectorAll(".least")].map((n) => n.textContent)).toEqual(["11"]);
+  const methods = ["scc_karp", "cascade", "hybrid", "howard"];
+
+  it("draws a row per graph and names the least work", () => {
+    const box = document.createElement("div");
+    box.innerHTML = scoreboard(index.graphs, methods, info, "chain-rise", 390).board;
+    expect(box.querySelectorAll("g.row")).toHaveLength(index.graphs.length);
+    const rise = box.querySelector('[data-id="chain-rise"]')!;
+    expect(rise.classList.contains("current")).toBe(true);
+    expect(rise.querySelector(".best")!.textContent).toBe("least work: hybrid (11)");
+  });
+
+  it("never lets two dots touch", () => {
+    for (const width of [320, 390, 880]) {
+      const box = document.createElement("div");
+      box.innerHTML = scoreboard(index.graphs, methods, info, "", width).board;
+      for (const row of box.querySelectorAll("g.row")) {
+        const dots = [...row.querySelectorAll("circle")].map((c) => [Number(c.getAttribute("cx")), Number(c.getAttribute("cy"))]);
+        for (const [i, a] of dots.entries())
+          for (const b of dots.slice(i + 1)) expect(Math.hypot(a[0] - b[0], a[1] - b[1])).toBeGreaterThanOrEqual(12);
+      }
+    }
   });
 });
 

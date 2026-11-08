@@ -20,93 +20,115 @@ body {
 
 /* ---- scoreboard ---------------------------------------------------------------------- */
 
-.board {
-  list-style: none;
-  margin: 16px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
+/* The key and the axis stay in view while you scroll down the ten rows. */
+.board-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  max-width: 880px;
+  margin-top: 18px;
+  padding: 10px 0 2px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
 }
 
-.card {
-  appearance: none;
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 14px 16px 15px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--surface);
-  color: var(--ink);
+.method-key {
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 8px 22px;
+  margin: 0 0 8px;
   font-family: var(--sans);
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    border-color 200ms,
-    background 200ms;
+  font-size: 14px;
+  color: var(--ink-2);
 }
 
-.card:hover {
-  border-color: var(--edge);
+@media (min-width: 600px) {
+  .method-key {
+    grid-template-columns: repeat(4, max-content);
+  }
 }
 
-.card.current {
-  border-color: var(--gold);
-  background: var(--surface-2);
-}
-
-.card-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 2px 12px;
-  margin-bottom: 10px;
-}
-
-.card-title {
-  font-family: var(--serif);
-  font-size: 18px;
-  line-height: 1.25;
-}
-
-.card-meta {
-  font-size: 12.5px;
-  color: var(--muted);
-}
-
-.bars {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) 3.2em;
+.key-chip {
+  display: inline-flex;
   align-items: center;
-  gap: 5px 10px;
-  font-size: 13px;
+  gap: 8px;
 }
 
-.bar-name {
-  color: var(--ink-2);
+.key-chip .swatch {
+  width: 12px;
+  height: 12px;
 }
 
-.bar-track {
-  height: 8px;
-}
-
-.bar {
+#score-axis svg,
+.scoreboard {
   display: block;
-  height: 100%;
-  border-radius: 0 4px 4px 0;
-  background: var(--c);
+  font-family: var(--sans);
 }
 
-.bar-n {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink-2);
+#score-axis .tick {
+  font-size: 12px;
+  fill: var(--muted);
 }
 
-.bar-n.least {
-  color: var(--good);
-  font-weight: 600;
+#scoreboard {
+  max-width: 880px;
+  padding-top: 6px;
+}
+
+.scoreboard .grid {
+  stroke: var(--line);
+  stroke-dasharray: 2 3;
+}
+
+.scoreboard .grid.major {
+  stroke: var(--edge);
+  stroke-dasharray: none;
+  opacity: 0.55;
+}
+
+.scoreboard .row {
+  cursor: pointer;
+  outline: none;
+}
+
+.scoreboard .hit {
+  fill: transparent;
+  transition: fill 200ms;
+}
+
+.scoreboard .row:hover .hit,
+.scoreboard .row:focus-visible .hit {
+  fill: var(--surface);
+}
+
+.scoreboard .row:focus-visible .hit {
+  stroke: var(--edge);
+}
+
+.scoreboard .row.current .hit {
+  fill: var(--surface-2);
+  stroke: var(--gold);
+  stroke-width: 1.5;
+}
+
+.scoreboard .name {
+  font-family: var(--serif);
+  font-size: 16px;
+  fill: var(--ink);
+}
+
+.scoreboard .best {
+  font-size: 12.5px;
+  fill: var(--muted);
+}
+
+.scoreboard .dot {
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.scoreboard .row.current .dot {
+  stroke: var(--surface-2);
 }
 
 .open-row {
@@ -152,20 +174,6 @@ button.open {
 
 .tabs[hidden] {
   display: none;
-}
-
-/* Four methods fit as a 2 × 2 grid on a phone, so none hides off the edge. */
-@media (max-width: 699px) {
-  .tabs {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    overflow: visible;
-  }
-
-  .tabs button {
-    justify-content: center;
-    padding: 9px 8px;
-  }
 }
 
 .tabs button,
@@ -316,15 +324,8 @@ table.work tbody th {
   color: var(--ink);
 }
 
-table.work tbody th .small {
-  display: block;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 1.2;
-}
-
 table.work td {
-  min-width: 72px;
+  min-width: 84px;
 }
 
 .mini {
@@ -379,52 +380,7 @@ table.work td {
   border-top: 1px solid var(--line);
 }
 
-/* On a phone the cards are a row you swipe through, so the race stays close by. */
-@media (max-width: 699px) {
-  .board {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding: 0 var(--gutter);
-    margin: 16px calc(-1 * var(--gutter)) 0;
-    padding: 2px var(--gutter) 6px;
-    scrollbar-width: none;
-  }
-
-  .board::-webkit-scrollbar {
-    display: none;
-  }
-
-  .board li {
-    flex: 0 0 82%;
-    scroll-snap-align: start;
-  }
-
-  .card {
-    height: 100%;
-  }
-}
-
-.swipe-hint {
-  margin: 6px 0 0;
-}
-
-@media (min-width: 700px) {
-  .board {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .swipe-hint {
-    display: none;
-  }
-}
-
 @media (min-width: 1000px) {
-  .board {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .race-layout {
     grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: start;
