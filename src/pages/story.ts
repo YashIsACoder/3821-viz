@@ -8,6 +8,7 @@ import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
 import { loadResults, tiles } from "../render/findings";
+import { examples } from "../render/examples";
 import { playground } from "../render/playground";
 import { GraphView } from "../render/graphView";
 import { legend } from "../render/legend";
@@ -191,6 +192,7 @@ function main() {
   });
 
   playground($("#playground"));
+  examples($("#examples"));
 
   loadResults()
     .then((r) => ($("#tiles").innerHTML = tiles(r)))
