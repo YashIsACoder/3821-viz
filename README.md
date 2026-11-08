@@ -10,7 +10,8 @@ much work each one does.
 
 - **The idea** (`index.html`): a short scroll-through story. A DMDP as a graph, SCCs, Karp's
   table, our pruning cascade, and Howard's policy iteration for contrast.
-- **Race the methods** (`compare.html`): pick a graph and watch every method on it side by side.
+- **Race the methods** (`compare.html`): pick a graph and watch every method on it side by side:
+  SCC + Karp, our cascade, our hybrid (cascade bounds, then Howard with a Karp fallback) and Howard.
   The clock counts relaxations, so the method that finishes first did the least work.
 
 ## How it connects to the research repo

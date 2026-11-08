@@ -22,7 +22,7 @@ const OUT = join(ROOT, "public", "data");
 
 const REF_FILE = join(ROOT, "backend.ref");
 const FORMAT = 1; // the `dmdp viz` format this site reads (src/lib/types.ts)
-const METHODS = ["scc_karp", "cascade", "howard"];
+const METHODS = ["scc_karp", "cascade", "hybrid", "howard"];
 const MAX_STATES = 40; // bigger graphs are unreadable as a drawing
 const MAX_EVENTS = 2000; // keeps each bundle small enough for a phone
 
@@ -65,8 +65,10 @@ function build(entry, scratch) {
     check(trace.length <= MAX_EVENTS, entry, `${method} trace has ${trace.length} events`);
     check(trace.every((e) => typeof e.relaxations === "number"), entry, `${method} trace has no relaxations (old backend?)`);
   }
-  const outcomes = methods.cascade.trace.filter((e) => ["scc", "prune", "trivial"].includes(e.type));
-  check(outcomes.length === sccs.comps.length, entry, "cascade must report one outcome per SCC");
+  for (const method of ["cascade", "hybrid"]) {
+    const outcomes = methods[method].trace.filter((e) => ["scc", "prune", "trivial"].includes(e.type));
+    check(outcomes.length === sccs.comps.length, entry, `${method} must report one outcome per SCC`);
+  }
 
   // Brute force is the ground truth when the graph is small enough for it.
   let bruteforce = null;

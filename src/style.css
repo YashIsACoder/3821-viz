@@ -1,5 +1,5 @@
 /* One dark theme, in the spirit of a 3Blue1Brown video: near-black, warm ink, a few calm colours.
-   Method colours were checked with a colour-vision validator against --bg (all pairs pass). */
+   Method colours were checked with a colour-vision validator against --bg. */
 :root {
   color-scheme: dark;
   --bg: #141414;
@@ -15,6 +15,7 @@
   --scc_karp: #4a9be0;
   --cascade: #3aaa78;
   --howard: #d17a2a;
+  --hybrid: #c86fb0; /* CVD-close to --cascade, so methods are always labelled by name too */
 
   --serif: "KaTeX_Main", "Latin Modern Roman", "CMU Serif", Georgia, serif;
   --sans: system-ui, -apple-system, "Segoe UI", sans-serif;

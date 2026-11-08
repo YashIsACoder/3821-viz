@@ -4,7 +4,7 @@
 // Any solver name the backend knows. These three are drawn first, in this order;
 // anything else in a bundle (a new solver, say) is still shown, after them.
 export type Method = string;
-export const METHODS: Method[] = ["scc_karp", "cascade", "howard"];
+export const METHODS: Method[] = ["scc_karp", "cascade", "hybrid", "howard"];
 
 // The `format` that `dmdp viz` writes. Older backends wrote none, which means 1.
 export const FORMAT = 1;
@@ -33,6 +33,7 @@ export interface Stats {
   sccs: number;
   sccs_skipped: number;
   iterations: number;
+  howard_fallbacks?: number; // hybrid only
   seconds: number;
 }
 
@@ -50,7 +51,7 @@ interface Base {
 }
 
 export type KnownEvent =
-  | (Base & { type: "scc"; id: number; size: number; lambda: string; D: string; gain: string; reason?: string })
+  | (Base & { type: "scc"; id: number; size: number; lambda: string; D: string; gain: string; reason?: string; solver?: string })
   | (Base & { type: "trivial"; id: number; size: number; D: string; gain: string })
   | (Base & { type: "bound"; id: number; rule: "max_edge" | "delta"; k: number; bound: string; D: string })
   | (Base & { type: "prune"; id: number; size: number; rule: "max_edge" | "delta"; k: number; bound: string; D: string })

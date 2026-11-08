@@ -1,6 +1,6 @@
 {
  "backend": {
-  "commit": "06a994f",
+  "commit": "725f13a",
   "dirty": false
  },
  "graphs": [
@@ -12,6 +12,7 @@
    "work": {
     "scc_karp": 7,
     "cascade": 7,
+    "hybrid": 11,
     "howard": 21
    }
   },
@@ -23,6 +24,7 @@
    "work": {
     "scc_karp": 10,
     "cascade": 9,
+    "hybrid": 9,
     "howard": 23
    }
   },
@@ -34,6 +36,7 @@
    "work": {
     "scc_karp": 6,
     "cascade": 6,
+    "hybrid": 8,
     "howard": 8
    }
   },
@@ -45,6 +48,7 @@
    "work": {
     "scc_karp": 4,
     "cascade": 4,
+    "hybrid": 6,
     "howard": 6
    }
   },
@@ -56,6 +60,7 @@
    "work": {
     "scc_karp": 60,
     "cascade": 12,
+    "hybrid": 11,
     "howard": 141
    }
   },
@@ -67,6 +72,7 @@
    "work": {
     "scc_karp": 60,
     "cascade": 60,
+    "hybrid": 55,
     "howard": 63
    }
   },
@@ -78,6 +84,7 @@
    "work": {
     "scc_karp": 105,
     "cascade": 105,
+    "hybrid": 74,
     "howard": 74
    }
   },
@@ -89,6 +96,7 @@
    "work": {
     "scc_karp": 144,
     "cascade": 144,
+    "hybrid": 606,
     "howard": 606
    }
   },
@@ -100,6 +108,7 @@
    "work": {
     "scc_karp": 22,
     "cascade": 9,
+    "hybrid": 15,
     "howard": 56
    }
   },
@@ -111,6 +120,7 @@
    "work": {
     "scc_karp": 103,
     "cascade": 98,
+    "hybrid": 95,
     "howard": 214
    }
   }

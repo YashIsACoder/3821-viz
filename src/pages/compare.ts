@@ -16,11 +16,13 @@ import { Player } from "../render/player";
 const NAMES: Record<string, string> = {
   scc_karp: "SCC + Karp",
   cascade: "Cascade (ours)",
+  hybrid: "Hybrid (ours)",
   howard: "Howard",
 };
 const ABOUT: Record<string, string> = {
   scc_karp: "Split into SCCs, run Karp's algorithm on every one, combine sinks first.",
   cascade: "The same, but skip Karp on an SCC when a cheap bound proves it can't beat leaving.",
+  hybrid: "The cascade's cheap test first; SCCs it can't skip go to Howard, with Karp as a fallback if Howard runs long.",
   howard: "Policy iteration: evaluate a policy, switch to better actions, repeat.",
 };
 const nameOf = (m: Method) => NAMES[m] ?? m;
@@ -82,7 +84,8 @@ function showGraph(bundle: Bundle) {
 
   const panels = $("#panels");
   panels.replaceChildren();
-  panels.style.setProperty("--lanes", String(Math.min(methods.length, 3)));
+  // Four lanes read better as a 2 x 2 grid than as 3 + 1.
+  panels.style.setProperty("--lanes", String(methods.length === 4 ? 2 : Math.min(methods.length, 3)));
   const narrow = window.matchMedia("(max-width: 899px)").matches;
 
   const lanes: Lane[] = methods.map((method) => {

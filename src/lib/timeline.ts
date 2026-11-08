@@ -32,6 +32,13 @@ const texOf = (value: string) => tex(parse(value));
 const math = (s: string) => `$${s}$`;
 const q = (s: string) => math(texOf(s));
 
+// The hybrid says which exact method found lambda.
+function foundBy(solver: string | undefined): string {
+  if (solver === "howard") return " (found by Howard)";
+  if (solver === "karp_fallback") return " (Howard hit its cap, so Karp finished)";
+  return "";
+}
+
 function describe(event: TraceEvent): string {
   const e = event as KnownEvent;
   switch (e.type) {
@@ -52,9 +59,9 @@ function describe(event: TraceEvent): string {
         return `SCC ${e.id} has no cycle, so its gain is the exit value: ${math("g^* = D =")} ${q(e.gain)}.`;
       }
       if (isNegInf(parse(e.D))) {
-        return `SCC ${e.id} is a sink: its gain is its best cycle mean, ${math(`\\lambda = ${texOf(e.lambda)}`)}.`;
+        return `SCC ${e.id} is a sink: its gain is its best cycle mean, ${math(`\\lambda = ${texOf(e.lambda)}`)}${foundBy(e.solver)}.`;
       }
-      return `SCC ${e.id}: best cycle ${math(`\\lambda = ${texOf(e.lambda)}`)}, exit value ${math(`D = ${texOf(e.D)}`)}, ` +
+      return `SCC ${e.id}: best cycle ${math(`\\lambda = ${texOf(e.lambda)}`)}${foundBy(e.solver)}, exit value ${math(`D = ${texOf(e.D)}`)}, ` +
         `so ${math(`g^* = \\max(\\lambda, D) = ${texOf(e.gain)}`)}.`;
     case "howard_iter":
       return e.iteration === 1

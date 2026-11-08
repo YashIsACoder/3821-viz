@@ -83,8 +83,10 @@ const STEPS: Step[] = [
     method: "howard",
     show: "end",
     html: `<h2>Race them yourself</h2>
-      <p>Every method gets the same exact gains. They differ in how much work it takes.
-      <a href="./compare.html">Watch all three on ten graphs →</a></p>`,
+      <p>Every method gets the same exact gains. They differ in how much work it takes.</p>
+      <p>Our hybrid puts the two ideas together: the cascade's cheap test first, then Howard on the SCCs
+      it can't skip, with Karp taking over if Howard runs too long.
+      <a href="./compare.html">Watch all four on ten graphs →</a></p>`,
   },
 ];
 

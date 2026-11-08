@@ -48,6 +48,11 @@ describe("timeline", () => {
     }
   });
 
+  it("says when the hybrid found a cycle mean with Howard", () => {
+    const captions = frames(bundle("dasdan"), "hybrid").map((f) => f.caption);
+    expect(captions.some((c) => c.includes("(found by Howard)"))).toBe(true);
+  });
+
   it("finds the frame reached by a given amount of work", () => {
     const list = frames(bundle("chain-rise"), "scc_karp");
     expect(frameAtWork(list, 0)).toBe(0);
