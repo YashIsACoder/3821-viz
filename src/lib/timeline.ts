@@ -26,6 +26,8 @@ export interface Frame {
   bounds: { id: number; D: string; points: BoundPoint[] } | null;
   gains: (string | null)[]; // per state, null while unknown
   policy: number[] | null; // edge ids to highlight
+  exit: { from: number; D: string } | null; // the exit value being used, to draw where it comes from
+  settled: number; // states already showing their optimal gain
 }
 
 const texOf = (value: string) => tex(parse(value));
@@ -88,6 +90,8 @@ export function frames(bundle: Bundle, method: Method): Frame[] {
     bounds: null,
     gains: new Array(graph.n).fill(null),
     policy: null,
+    exit: null,
+    settled: 0,
   };
   const out: Frame[] = [frame];
 
@@ -101,6 +105,9 @@ export function frames(bundle: Bundle, method: Method): Frame[] {
     // Copy what this event can change; everything else is shared with the previous frame.
     frame = { ...frame, sccs: [...frame.sccs], gains: [...frame.gains], work: event.relaxations, caption: describe(event) };
     const e = event as KnownEvent;
+    const D = (event as { D?: string }).D;
+    const id = (event as { id?: number }).id;
+    frame.exit = D !== undefined && id !== undefined && D !== "-inf" ? { from: id, D } : null;
     switch (e.type) {
       case "karp_row": {
         const rows = frame.karp?.id === e.id ? [...frame.karp.rows, e.row] : [e.row];
@@ -135,6 +142,7 @@ export function frames(bundle: Bundle, method: Method): Frame[] {
         frame.policy = e.policy;
         break;
     }
+    frame.settled = countSettled(frame.gains, result.gain);
     out.push(frame);
   }
 
@@ -147,12 +155,20 @@ export function frames(bundle: Bundle, method: Method): Frame[] {
     bounds: null,
     gains: [...result.gain],
     policy: result.policy,
+    exit: null,
+    settled: graph.n,
     caption:
       `Done after ${result.stats.relaxations} relaxations` +
       (method === "howard" ? ` and ${result.stats.iterations} rounds. ` : skipped ? `, with ${skipped} SCC${skipped === 1 ? "" : "s"} skipped. ` : ". ") +
       "Highlighted: an optimal action in every state.",
   });
   return out;
+}
+
+// How many states already show their optimal gain. For the SCC methods that is every state of a
+// settled SCC; for Howard it is every state whose current policy already earns the optimum.
+function countSettled(gains: (string | null)[], optimal: string[]): number {
+  return gains.reduce((n, g, v) => n + (g === optimal[v] ? 1 : 0), 0);
 }
 
 // The last frame whose work is at most `work`: how far a method has got on a shared clock.

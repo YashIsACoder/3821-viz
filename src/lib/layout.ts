@@ -23,16 +23,17 @@ export interface Layout {
   height: number;
 }
 
-const STATE_GAP = 46; // distance between neighbouring states on a ring
-const COLUMN_GAP = 76;
-const ROW_GAP = 64; // room for the gain and status labels under each SCC
-const PAD = 36;
-const LABEL_ROOM = 44; // the same, under the last SCC
+// Generous on purpose: a drawing you can read on a phone beats one that fits more in.
+const STATE_GAP = 68; // distance between neighbouring states on a ring
+const COLUMN_GAP = 120; // between levels of the condensation; exit arrows and their weights live here
+const ROW_GAP = 96; // between SCCs in one level: room for the labels under one and above the next
+const PAD = 52;
+const LABEL_ROOM = 60; // the labels under the last SCC
 
 function ringRadius(size: number): number {
   if (size <= 1) return 0;
-  if (size === 2) return STATE_GAP / 2;
-  return Math.max(30, (STATE_GAP * size) / (2 * Math.PI));
+  if (size === 2) return STATE_GAP / 2 + 6;
+  return Math.max(44, (STATE_GAP * size) / (2 * Math.PI));
 }
 
 export function layout(g: Graph, scc: Sccs, vertical = false): Layout {

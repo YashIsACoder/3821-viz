@@ -78,3 +78,8 @@
     min-height: 70vh;
   }
 }
+
+/* Grid children would otherwise grow to fit a wide drawing and push text off the screen. */
+.story > * {
+  min-width: 0;
+}
