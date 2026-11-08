@@ -324,8 +324,7 @@ marker path.head.on {
 
 /* ---- the basics: icons for the five parts, then three pictures ------------------------- */
 
-.parts,
-.uses {
+.parts {
   list-style: none;
   margin: 20px 0 0;
   padding: 0;
@@ -347,19 +346,11 @@ marker path.head.on {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .uses {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
-@media (min-width: 1000px) {
-  .uses {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
 
-.parts li,
-.uses li {
+
+.parts li {
   display: grid;
   justify-items: start;
   gap: 2px;
@@ -368,22 +359,19 @@ marker path.head.on {
   background: var(--surface);
 }
 
-.parts svg,
-.uses svg {
+.parts svg {
   width: 40px;
   height: 40px;
   margin-bottom: 6px;
 }
 
-.parts b,
-.uses b {
+.parts b {
   font-weight: 500;
   font-size: 15px;
   color: var(--ink);
 }
 
-.parts span,
-.uses span {
+.parts span {
   font-size: 13px;
   line-height: 1.35;
   color: var(--muted);
@@ -498,12 +486,114 @@ svg text {
   }
 }
 
-.uses svg {
+/* ---- the opening: say plainly that it's a game you can play -------------------------- */
+
+.try-it {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #2f2b1d;
+  color: var(--gold);
+  font: 500 14px var(--sans);
+}
+
+.try-it .arrow-r,
+.try-it .arrow-d {
+  font-size: 18px;
+  animation: nudge 1.4s var(--ease) infinite;
+}
+
+.try-it .arrow-d {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .try-it .arrow-r {
+    display: none;
+  }
+
+  .try-it .arrow-d {
+    display: inline;
+    animation-name: nudge-d;
+  }
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes nudge-d {
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.pg-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font: 13px var(--sans);
+  color: var(--ink-2);
+}
+
+.pg-badge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--bg);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.pg-goal b {
+  color: var(--gold);
+}
+
+.pg-callout .pulse {
   fill: none;
   stroke: var(--gold);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.pg-callout rect,
+.pg-callout path {
+  fill: var(--gold);
+}
+
+.pg-callout text {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--bg);
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.playground {
+  transition: border-color 400ms, box-shadow 400ms;
+}
+
+.playground.won {
+  border-color: var(--good);
+  box-shadow: 0 0 0 3px rgba(131, 193, 103, 0.18);
 }
 
 /* ---- what we did ----------------------------------------------------------------------- */

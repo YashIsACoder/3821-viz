@@ -44,8 +44,12 @@ export function playground(root: HTMLElement) {
   const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   root.innerHTML = `
+    <div class="pg-top">
+      <span class="pg-badge">▶ Play</span>
+      <span class="pg-goal">Find the moves with the best long-run average. Can you beat <b>2</b>?</span>
+    </div>
     <div class="pg-stage">
-      <svg class="pg" viewBox="14 30 292 180" role="img" aria-label="A small decision process: four states, with arrows for moves and their rewards"></svg>
+      <svg class="pg" viewBox="14 2 292 208" role="img" aria-label="A small decision process: four states, with arrows for moves and their rewards"></svg>
       <div class="pg-side">
         <div class="pg-label">average reward per move</div>
         <div class="pg-avg" aria-live="polite">–</div>
@@ -53,7 +57,7 @@ export function playground(root: HTMLElement) {
         <div class="pg-verdict"></div>
       </div>
     </div>
-    <p class="pg-hint">Tap <b>A</b> or <b>D</b> to change its move.</p>`;
+    <p class="pg-hint">The gold rings can switch moves: tap <b>A</b> or <b>D</b>.</p>`;
   const svg = root.querySelector<SVGSVGElement>("svg.pg")!;
   const spark = root.querySelector<SVGSVGElement>(".pg-spark")!;
   const avgOut = root.querySelector<HTMLElement>(".pg-avg")!;
@@ -97,6 +101,16 @@ export function playground(root: HTMLElement) {
   });
   const token = node("circle", { r: 7, class: "pg-token", cx: STATES[0].x, cy: STATES[0].y });
   svg.append(token);
+
+  // Until the first tap, a pulsing ring and a "tap me" bubble say that A can be changed.
+  const callout = node("g", { class: "pg-callout", "aria-hidden": "true" });
+  callout.append(node("circle", { cx: STATES[0].x, cy: STATES[0].y, r: 22, class: "pulse" }));
+  callout.append(node("rect", { x: STATES[0].x - 30, y: STATES[0].y - 58, width: 60, height: 22, rx: 11 }));
+  callout.append(node("path", { d: `M${STATES[0].x - 5} ${STATES[0].y - 37} L${STATES[0].x} ${STATES[0].y - 30} L${STATES[0].x + 5} ${STATES[0].y - 37}z` }));
+  const bubble = node("text", { x: STATES[0].x, y: STATES[0].y - 43, "text-anchor": "middle" });
+  bubble.textContent = "tap me";
+  callout.append(bubble);
+  svg.append(callout);
 
   let at = 0;
   let steps = 0;
@@ -142,10 +156,11 @@ export function playground(root: HTMLElement) {
 
   const settle = () => {
     const mean = loopMean();
+    root.classList.toggle("won", mean === BEST);
     verdict.innerHTML =
       mean === BEST
-        ? `<span class="good">Best loop: C → D → C, ${BEST} per move.</span> Giving up the +1 at A paid off.`
-        : `Settles on ${+mean.toFixed(2)}. Can you do better?`;
+        ? `<span class="good">You found it: C → D → C, ${BEST} per move.</span> Skipping the +1 at A paid off.`
+        : `Stuck at ${+mean.toFixed(2)}. Tap <b>A</b> to try its other move.`;
   };
 
   const restart = () => {
@@ -157,6 +172,7 @@ export function playground(root: HTMLElement) {
     token.setAttribute("cy", String(STATES[0].y));
     avgOut.textContent = "–";
     verdict.textContent = "";
+    root.classList.remove("won");
     drawPolicy();
     drawSpark();
     if (still) {
@@ -193,6 +209,7 @@ export function playground(root: HTMLElement) {
 
   const toggle = (s: number) => {
     if (MOVES[s].length < 2) return;
+    callout.remove();
     policy[s] = (policy[s] + 1) % MOVES[s].length;
     restart();
   };
