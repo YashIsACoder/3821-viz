@@ -28,11 +28,11 @@ export async function loadResults(): Promise<Results> {
 
 // What each generated family looks like, in words.
 const FAMILIES: Record<string, string> = {
-  rising: "chains where each SCC is worse than the next",
+  rising: "chains that get better",
   small: "many small SCCs",
-  periodic: "SCCs whose best cycle is long",
-  giant: "one giant SCC, the rest single states",
-  falling: "chains where each SCC is better than the next",
+  periodic: "long best cycles",
+  giant: "one giant SCC",
+  falling: "chains that get worse",
 };
 
 const num = (x: number) => x.toLocaleString("en");
@@ -45,9 +45,9 @@ function tile(big: string, label: string): string {
 export function tiles(r: Results): string {
   const best = [...r.pruning.families].sort((a, b) => b.saved - a.saved)[0];
   return (
-    tile(String(r.agreement.disagreements), `disagreements. All methods gave exactly the same gains on ${num(r.agreement.graphs)} graphs, and ${num(r.agreement.bruteforce)} were also checked by trying every policy.`) +
-    tile(String(r.soundness.violations), `wrong skips. The cascade skipped ${num(r.soundness.skips)} SCCs over ${num(r.soundness.graphs)} graphs, and for every one, Karp's exact answer confirms no cycle inside beat leaving.`) +
-    tile(`${Math.round(best.saved)}%`, `less work on ${FAMILIES[best.family] ?? best.family}${best.skipped === 100 ? ": every SCC but the last is skipped" : ""}.`)
+    tile(String(r.agreement.disagreements), `wrong answers, on ${num(r.agreement.graphs)} graphs`) +
+    tile(String(r.soundness.violations), `unsafe skips, out of ${num(r.soundness.skips)}`) +
+    tile(`${Math.round(best.saved)}%`, `less work on ${FAMILIES[best.family] ?? best.family}`)
   );
 }
 
@@ -68,47 +68,63 @@ export function familyBars(r: Results): string {
     .join("");
 }
 
-export function circuits(r: Results): string {
+// A grid of n small squares, the first `filled` of them lit: counts you can see at a glance.
+export function waffle(n: number, filled: number, label: string, ringed = 0): string {
+  const cells = Array.from({ length: n }, (_, i) => `<i class="${i < filled ? "on" : ""}${i < ringed ? " ring" : ""}"></i>`).join("");
+  return `<div class="waffle" role="img" aria-label="${label}">${cells}</div>`;
+}
+
+// E3 and E4 together: of the SCCs that could be skipped, how many the largest-edge test got, how many
+// δ_k added, and how many were missed. One bar per kind of graph.
+export function skipBars(r: Results): string {
+  if (!r.bounds) return "";
+  return r.bounds.families
+    .map((f) => {
+      const pct = (x: number) => (100 * x) / f.couldSkip;
+      const extra = f.all - f.maxEdge;
+      const missed = f.couldSkip - f.all;
+      const tip = `${FAMILIES[f.family] ?? f.family}: ${num(f.maxEdge)} by the largest edge, ${num(extra)} more by δk, ${num(missed)} missed, of ${num(f.couldSkip)}`;
+      return (
+        `<div class="skip-row" title="${tip}">` +
+        `<span class="skip-name">${FAMILIES[f.family] ?? f.family}</span>` +
+        `<span class="skip-bar"><i class="edge" style="width:${pct(f.maxEdge)}%"></i><i class="delta" style="width:${pct(extra)}%"></i></span>` +
+        `<span class="skip-n">${Math.round(pct(f.all))}%</span>` +
+        `</div>`
+      );
+    })
+    .join("");
+}
+
+export function stallWaffles(r: Results): string {
+  if (!r.stall) return "";
+  const s = r.stall;
+  return (
+    `<figure class="w-fig">${waffle(s.sccs, s.deltaReaches, `${s.deltaReaches} of ${s.sccs}`)}` +
+    `<figcaption><b>${s.deltaReaches} of ${s.sccs}</b> reached λ with δ<sub>k</sub></figcaption></figure>` +
+    `<figure class="w-fig">${waffle(s.sccs, s.windowReaches, `${s.windowReaches} of ${s.sccs}`)}` +
+    `<figcaption><b>${s.windowReaches} of ${s.sccs}</b> with a window bound</figcaption></figure>`
+  );
+}
+
+// Head-to-head on circuits as two big numbers, then the Asadi times.
+export function circuitTiles(r: Results): string {
+  const h = r.headToHead;
+  if (!h) return "";
+  return (
+    tile(`${h.hybridBeatsCascade} of ${h.circuits}`, `circuits where the hybrid beat the cascade, typically ${h.hybridVsCascadeIscas}×`) +
+    tile(`${h.howardBeatsHybrid} of ${h.circuits}`, `where Howard beat the hybrid, about ${h.howardVsHybridIscas}×`)
+  );
+}
+
+export function asadiTimes(r: Results): string {
   const h = r.headToHead;
   if (!h) return "";
   const s = h.asadi.seconds;
-  return `
-    <p>On ${h.circuits} real circuits, the hybrid beat our cascade on ${h.hybridBeatsCascade}
-      (typically ${h.hybridVsCascadeIscas}× faster). But Howard was faster still on ${h.howardBeatsHybrid}, by about
-      ${h.howardVsHybridIscas}×: in circuits most SCCs have no cycle at all, so there is little to skip.</p>
-    <p>The hybrid earns its place on graphs built to be hard for Howard. With ${num(h.asadi.n)} states:</p>
-    <div class="times">
+  return `<div class="times">
       <div><b>${secs(s.howard)}</b><span>Howard</span></div>
       <div><b>${secs(s.hybrid)}</b><span>Hybrid</span></div>
       <div><b>${secs(s.cascade)}</b><span>Cascade</span></div>
     </div>`;
-}
-
-// E4 as a table: the cheapest test against all of them, out of the SCCs that could be skipped.
-export function boundsTable(r: Results): string {
-  if (!r.bounds) return "";
-  const rows = r.bounds.families
-    .map(
-      (f) =>
-        `<tr><th scope="row">${FAMILIES[f.family] ?? f.family}</th><td>${num(f.couldSkip)}</td>` +
-        `<td>${num(f.maxEdge)}</td><td>${num(f.all)}</td></tr>`,
-    )
-    .join("");
-  return (
-    `<div class="table-scroll"><table class="numbers">` +
-    `<thead><tr><th scope="col">Kind of graph</th><th scope="col">SCCs that could go</th>` +
-    `<th scope="col">largest edge alone</th><th scope="col">with δ<sub>k</sub> too</th></tr></thead>` +
-    `<tbody>${rows}</tbody></table></div>`
-  );
-}
-
-export function stallTiles(r: Results): string {
-  if (!r.stall) return "";
-  const s = r.stall;
-  return (
-    tile(`${s.deltaReaches} of ${s.sccs}`, `SCCs with long best cycles where δ<sub>k</sub> came down to λ, even with twice as many rows as the SCC has states.`) +
-    tile(`${s.windowReaches} of ${s.sccs}`, `where a “window” bound reached λ within as many rows as states. It measures the rise over the last p rows, not just the last one.`)
-  );
 }
 
 const SERIES = ["howard", "hybrid", "cascade"] as const;

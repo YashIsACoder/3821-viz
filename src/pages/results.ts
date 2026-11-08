@@ -1,21 +1,21 @@
-// The results page: every experiment's headline, read from results.json.
+// The results page: every experiment as a picture, read from results.json.
 import "katex/dist/katex.min.css";
 import "../style.css";
 import "./findings.css";
-import { boundsTable, circuits, familyBars, loadResults, scalingChart, sources, stallTiles, tiles } from "../render/findings";
+import { asadiTimes, circuitTiles, familyBars, loadResults, scalingChart, skipBars, sources, stallWaffles, tiles, waffle } from "../render/findings";
 
 const $ = (sel: string) => document.querySelector<HTMLElement>(sel)!;
 
 async function main() {
   const r = await loadResults();
+  const a = r.agreement;
   $("#tiles").innerHTML = tiles(r);
-  $("#exact-note").textContent =
-    `${r.agreement.graphs.toLocaleString("en")} graphs agree, ${r.agreement.bruteforce} of them also checked by brute force, ` +
-    `${r.agreement.disagreements} disagreements.`;
+  $("#agree").innerHTML = waffle(a.graphs, a.graphs, `${a.graphs} graphs agree, ${a.bruteforce} also checked by brute force`, a.bruteforce);
   $("#families").innerHTML = familyBars(r);
-  $("#bounds-table").innerHTML = boundsTable(r);
-  $("#stall-tiles").innerHTML = stallTiles(r);
-  $("#circuits").innerHTML = circuits(r);
+  $("#skips").innerHTML = skipBars(r);
+  $("#stall-waffles").innerHTML = stallWaffles(r);
+  $("#circuit-tiles").innerHTML = circuitTiles(r);
+  $("#asadi").innerHTML = asadiTimes(r);
   $("#sources").innerHTML = sources(r);
   $("#backend").textContent = `Data from dmdp at ${r.backend.commit}.`;
 

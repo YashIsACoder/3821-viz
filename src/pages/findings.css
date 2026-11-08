@@ -84,49 +84,203 @@
 }
 
 
-#bounds-table {
+/* ---- squares, one per graph or SCC ------------------------------------------------------ */
+
+.waffle {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 16px);
+  gap: 5px;
   max-width: 760px;
+  margin: 14px 0 6px;
 }
 
-table.numbers {
-  border-collapse: collapse;
-  font-family: var(--sans);
-  font-size: 14px;
-  min-width: 100%;
+.waffle i {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  background: var(--surface-2);
 }
 
-table.numbers th,
-table.numbers td {
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--line);
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+.waffle i.on {
+  background: var(--good);
+  animation: pop 400ms var(--ease) both;
 }
 
-table.numbers thead th {
-  font-weight: 500;
-  font-size: 12.5px;
+.waffle i.ring {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3.5px var(--gold);
+}
+
+@keyframes pop {
+  from {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+}
+
+.w-pair {
+  display: grid;
+  gap: 18px 40px;
+}
+
+@media (min-width: 800px) {
+  .w-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.w-fig {
+  margin: 0;
+  min-width: 0;
+}
+
+.w-fig .waffle i.on {
+  background: var(--gold);
+}
+
+.w-fig figcaption {
+  font: 14px var(--sans);
   color: var(--muted);
-  vertical-align: bottom;
 }
 
-table.numbers tbody th {
-  font-weight: 400;
-  text-align: left;
+.w-fig figcaption b {
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--ink);
+}
+
+/* ---- what each test skipped --------------------------------------------------------------- */
+
+.key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+  margin: 8px 0 14px;
+  font: 13px var(--sans);
   color: var(--ink-2);
 }
 
-table.numbers th:first-child {
-  text-align: left;
-  padding-left: 0;
-  min-width: 9em;
+.key span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.sw {
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.sw.edge,
+.skip-bar .edge {
+  background: var(--cascade);
+}
+
+.sw.delta,
+.skip-bar .delta {
+  background: #8fd3b3;
+}
+
+.sw.missed {
+  border: 1px dashed var(--edge);
+}
+
+#skips {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr) 3em;
+  align-items: center;
+  gap: 12px 14px;
+  max-width: 760px;
+  font: 14px var(--sans);
+}
+
+.skip-row {
+  display: contents;
+}
+
+.skip-name {
+  color: var(--ink-2);
+}
+
+.skip-bar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border: 1px dashed var(--edge);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.skip-bar i {
+  display: block;
+  height: 100%;
+}
+
+.skip-n {
+  text-align: right;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 499px) {
-  table.numbers th,
-  table.numbers td {
-    padding: 9px 6px;
+  #skips {
+    grid-template-columns: minmax(0, 1fr) 3em;
+    gap: 4px 12px;
   }
+
+  .skip-name {
+    grid-column: 1 / -1;
+    margin-top: 8px;
+  }
+}
+
+/* ---- shares of time ----------------------------------------------------------------------- */
+
+.meters {
+  display: grid;
+  gap: 14px;
+  max-width: 760px;
+  margin: 14px 0;
+  font-family: var(--sans);
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: 3.4em minmax(0, 1fr);
+  gap: 4px 14px;
+  align-items: center;
+}
+
+.m-n {
+  grid-row: span 2;
+  font-size: 26px;
+  color: var(--gold);
+}
+
+.m-bar {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.m-bar i {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.m-what {
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.result h3 {
+  margin-top: 28px;
+}
+
+.scaling-box {
+  max-width: 720px;
 }
 
 .scaling {

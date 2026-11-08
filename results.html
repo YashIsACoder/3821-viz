@@ -20,121 +20,72 @@
       <header class="hero">
         <div class="eyebrow">Results</div>
         <h1>What we found</h1>
-        <p class="lede">
-          We ran every method on 136 graphs: families we generated to test one thing at a time, real
-          circuits from a standard benchmark suite, and graphs built to be hard for Howard's method. Here
-          is what held up, and where our idea doesn't help.
-        </p>
+        <p class="lede">Seven experiments, 136 graphs.</p>
         <div class="tiles" id="tiles"></div>
       </header>
 
-      <section class="block" id="exact">
-        <div class="eyebrow">Experiment E1</div>
-        <h2>Every method gives the same answer</h2>
-        <p class="lede">
-          Skipping is only worth having if it never changes the answer. Every method returns exact
-          fractions, so “the same” means equal, not close. On every graph where all methods finished, they
-          agreed on every state's gain, and on the small graphs we also checked them against brute force:
-          trying every policy there is.
-        </p>
-        <p class="small" id="exact-note"></p>
+      <section class="block result" id="exact">
+        <div class="eyebrow">E1 · exactness</div>
+        <h2>Every method, the same answer</h2>
+        <p class="small">One square per graph. Ringed: also checked by trying every policy.</p>
+        <div id="agree"></div>
       </section>
 
-      <section class="block" id="safe">
-        <div class="eyebrow">Experiment E3</div>
-        <h2>Every skip was safe</h2>
-        <p class="lede">
-          For each SCC the cascade skipped, we ran Karp's algorithm on it anyway and checked that no cycle
-          inside beat leaving. None did. That is what the soundness proof promises; this checks the code
-          does what the proof says.
-        </p>
-        <p class="lede">
-          It doesn't skip everything it could. On graphs of many small SCCs it skipped about three in
-          four of the SCCs that could have gone, and on SCCs with long best cycles only a handful.
-        </p>
-      </section>
-
-      <section class="block" id="helps">
-        <div class="eyebrow">Experiment E2</div>
-        <h2>Where skipping helps, and where it doesn't</h2>
-        <p class="lede">
-          The share of Karp's work the cascade avoided, by kind of graph. Skipping can only happen when
-          an SCC's best cycle is no better than somewhere you can go next, so it pays when graphs get
-          better further along, and not at all when they get worse.
-        </p>
+      <section class="block result" id="helps">
+        <div class="eyebrow">E2 · where it helps</div>
+        <h2>Skipping pays when later SCCs are better</h2>
+        <p class="small">Share of Karp's work avoided.</p>
         <div class="families" id="families"></div>
       </section>
 
-      <section class="block" id="bounds">
-        <div class="eyebrow">Experiment E4</div>
+      <section class="block result" id="bounds">
+        <div class="eyebrow">E3, E4 · the tests</div>
         <h2>The cheapest test does most of the skipping</h2>
-        <p class="lede">
-          The cascade first compares the largest reward inside an SCC with its exit value, which costs one
-          look at each edge. Only if that fails does it build Karp rows and try δ<sub>k</sub>. The first
-          test alone accounts for nearly every skip. Numbers are SCCs, summed over every graph of each kind.
-        </p>
-        <div id="bounds-table"></div>
+        <div class="key">
+          <span><i class="sw edge"></i>largest edge</span>
+          <span><i class="sw delta"></i>+ δ<sub>k</sub></span>
+          <span><i class="sw missed"></i>missed</span>
+        </div>
+        <div id="skips"></div>
+        <p class="small">Out of the SCCs that could safely be skipped. Every skip was checked against Karp: none was wrong.</p>
       </section>
 
-      <section class="block" id="stall">
-        <div class="eyebrow">Experiment E7</div>
-        <h2>Why δ<sub>k</sub> stalls on long cycles</h2>
-        <p class="lede">
-          δ<sub>k</sub> is the most any state's best k-step reward grows from one row to the next. When
-          the best cycle is long, those rewards grow in bursts, once per trip round the cycle, so the
-          largest single step stays well above the average and δ<sub>k</sub> never comes down to it. It
-          depends on the cycles, not the SCC: add a self-loop as good as the best cycle and the stall goes.
-        </p>
-        <div class="tiles" id="stall-tiles"></div>
+      <section class="block result" id="stall">
+        <div class="eyebrow">E7 · a limit</div>
+        <h2>δ<sub>k</sub> stalls when the best loop is long</h2>
+        <p class="small">120 SCCs with long best loops. A “window” bound, looking several rows back, fixes it.</p>
+        <div class="w-pair" id="stall-waffles"></div>
       </section>
 
-      <section class="block" id="circuits-block">
-        <div class="eyebrow">Experiment E6</div>
-        <h2>On real circuits, and on graphs built to be hard</h2>
-        <div id="circuits"></div>
-        <h3>How the time grows</h3>
-        <p class="small">
-          Both axes are logarithmic. On this family, doubling the size multiplies Howard's time by about 14 to
-          16, and the hybrid's by about 7 to 8.
-        </p>
-        <div id="scaling"></div>
+      <section class="block result" id="circuits-block">
+        <div class="eyebrow">E6 · head to head</div>
+        <h2>Howard wins on circuits. The hybrid wins when Howard struggles.</h2>
+        <div class="tiles" id="circuit-tiles"></div>
+        <h3>On a graph built to be hard for Howard</h3>
+        <div class="scaling-box" id="scaling"></div>
+        <div id="asadi"></div>
       </section>
 
-      <section class="block" id="why-slow">
+      <section class="block result" id="why-slow">
         <div class="eyebrow">Where the time goes</div>
-        <h2>Why the cascade is slow on circuits</h2>
-        <p class="lede">
-          We timed each phase of each method on the 36 circuits. Most circuit SCCs have no cycle at all
-          (95% of them), so there is little left to skip, and almost all the cascade's time is Karp on
-          what remains: a median 92%.
-        </p>
-        <p class="lede">
-          The surprise was where inside Karp. The final formula, not building the table, takes a median
-          85% of the cascade's time, because every step builds an exact fraction and reduces it. A
-          cheaper exact comparison, tried outside the frozen code, made the cascade about 4× faster and
-          cut Howard's median lead on these circuits from 12.5× to 3.2×. Howard still won on all 36.
-        </p>
-        <p class="lede">
-          For the hybrid, about 42% of its time goes on turning per-SCC answers into one policy for the
-          whole graph, a step Howard doesn't need. Trying δ<sub>k</sub> before Howard (option B) rarely
-          helps: a median 5% difference on circuits, and up to 24.6× slower when the rows go to waste.
-        </p>
+        <h2>Why circuits are hard to skip, and slow for Karp</h2>
+        <div class="meters">
+          <div class="meter"><span class="m-n">95%</span><span class="m-bar"><i style="width:95%"></i></span><span class="m-what">of circuit SCCs have no cycle: little left to skip</span></div>
+          <div class="meter"><span class="m-n">92%</span><span class="m-bar"><i style="width:92%"></i></span><span class="m-what">of the cascade's time is Karp (median)</span></div>
+          <div class="meter"><span class="m-n">85%</span><span class="m-bar"><i style="width:85%"></i></span><span class="m-what">is Karp's last step, comparing exact fractions</span></div>
+        </div>
+        <p class="small">A cheaper comparison, tried outside the frozen code, made the cascade about 4× faster.</p>
       </section>
 
       <section class="block" id="limits">
-        <h2>What these results don't say</h2>
+        <h2>Caveats</h2>
         <ul class="plain">
-          <li>Times are from one machine (an Apple M2 with 16 GB), the fastest of three runs. Ratios
-            between methods are more reliable than the times themselves.</li>
-          <li>Our Karp has a constant-factor cost we found late, so part of Howard's lead on circuits is
-            our implementation, not the algorithms.</li>
-          <li>The generated families were chosen to show when skipping can and can't help. They are not a
-            sample of real-world graphs.</li>
-          <li>The five largest graphs ran only Howard and the hybrid: Karp's table for them doesn't fit
-            in 16 GB of memory.</li>
+          <li>One machine (Apple M2, 16 GB), best of three runs.</li>
+          <li>The generated families show when skipping can help. They aren't a sample of real graphs.</li>
+          <li>The five largest graphs ran only Howard and the hybrid: Karp's table didn't fit in memory.</li>
         </ul>
         <p class="small" id="sources"></p>
-        <p><a href="./compare.html">Race the four methods yourself →</a></p>
+        <p><a class="button" href="./compare.html">Race the methods →</a></p>
       </section>
 
       <footer>

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { frames } from "../src/lib/timeline";
 import { methodsOf, toBundle, type Bundle } from "../src/lib/types";
 import { scoreboard } from "../src/render/charts";
-import { boundsTable, circuits, familyBars, scalingChart, tiles } from "../src/render/findings";
+import { asadiTimes, familyBars, scalingChart, skipBars, stallWaffles, tiles } from "../src/render/findings";
 import { GraphView } from "../src/render/graphView";
 import { boundChart, karpTable } from "../src/render/panels";
 
@@ -87,18 +87,19 @@ describe("what we found", () => {
 
   it("quotes the experiment numbers", () => {
     const box = document.createElement("div");
-    box.innerHTML = tiles(results) + familyBars(results) + circuits(results);
+    box.innerHTML = tiles(results) + familyBars(results) + asadiTimes(results);
     expect(box.querySelectorAll(".tile")).toHaveLength(3);
     expect(box.querySelectorAll(".family")).toHaveLength(results.pruning.families.length);
     expect(box.textContent).toContain(`${results.agreement.graphs} graphs`);
     expect(box.textContent).toContain("350 s");
   });
 
-  it("draws the scaling chart and the bounds table", () => {
+  it("draws the scaling chart, the skip bars and the squares", () => {
     const box = document.createElement("div");
-    box.innerHTML = scalingChart(results, 390) + boundsTable(results);
+    box.innerHTML = scalingChart(results, 390) + skipBars(results) + stallWaffles(results);
     expect(box.querySelectorAll("polyline")).toHaveLength(3);
     expect(box.querySelector("svg")!.getAttribute("width")).toBe("390");
-    expect(box.querySelectorAll("tbody tr")).toHaveLength(results.bounds.families.length);
+    expect(box.querySelectorAll(".skip-row")).toHaveLength(results.bounds.families.length);
+    expect(box.querySelectorAll(".waffle i.on")).toHaveLength(results.stall.deltaReaches + results.stall.windowReaches);
   });
 });
