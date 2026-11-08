@@ -26,8 +26,16 @@
 
       <div class="story">
         <div class="stage" aria-live="polite">
-          <div class="stage-head small"><span id="stage-title"></span><span id="stage-work"></span></div>
+          <div class="stage-head small">
+            <span id="stage-title"></span>
+            <span class="stage-tools">
+              <span id="stage-work"></span>
+              <button type="button" class="tool" id="replay" aria-label="Play this step again">↻</button>
+              <button type="button" class="tool" id="speed" aria-label="Playback speed"></button>
+            </span>
+          </div>
           <div id="stage-graph"></div>
+          <div id="stage-legend"></div>
           <p class="caption" id="stage-caption"></p>
           <div class="detail" id="stage-detail"></div>
         </div>

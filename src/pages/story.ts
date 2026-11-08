@@ -4,10 +4,13 @@ import "katex/dist/katex.min.css";
 import "../style.css";
 import "./story.css";
 import { frames, type Frame } from "../lib/timeline";
+import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
 import { GraphView } from "../render/graphView";
+import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
+import { cycleSpeed, playbackSpeed, speedLabel } from "../render/player";
 
 interface Step {
   graph: string;
@@ -79,14 +82,23 @@ const STEPS: Step[] = [
       graph from Asadi et al. (2025) it needs 606 relaxations to Karp's 144.</p>`,
   },
   {
-    graph: "asadi",
-    method: "howard",
+    graph: "dasdan",
+    method: "hybrid",
+    show: "play",
+    html: `<h2>Our hybrid: test first, then Howard</h2>
+      <p>The hybrid puts the two ideas together. Going SCC by SCC, it tries the cascade's cheapest bound
+      first. Any SCC that can't be skipped goes to Howard, and Karp takes over if Howard runs too long.</p>
+      <p>On this graph from Dasdan's benchmark suite it skips two SCCs and needs 95 relaxations, the fewest
+      of the four methods. Karp on every SCC takes 103, and Howard on the whole graph 214.</p>`,
+  },
+  {
+    graph: "dasdan",
+    method: "hybrid",
     show: "end",
     html: `<h2>Race them yourself</h2>
-      <p>Every method gets the same exact gains. They differ in how much work it takes.</p>
-      <p>Our hybrid puts the two ideas together: the cascade's cheap test first, then Howard on the SCCs
-      it can't skip, with Karp taking over if Howard runs too long.
-      <a href="./compare.html">Watch all four on ten graphs →</a></p>`,
+      <p>Every method gets the same exact gains. They differ in how much work it takes, and which one
+      wins depends on the graph.</p>
+      <p><a href="./compare.html">Watch all four on ten graphs →</a></p>`,
   },
 ];
 
@@ -101,53 +113,65 @@ const getBundle = (id: string) => {
 let view: { key: string; graph: GraphView; frames: Frame[]; bundle: Bundle } | null = null;
 let timer: number | null = null;
 let current = -1;
+let shown = 0; // index of the frame on the stage
+
+const narrow = () => window.matchMedia("(max-width: 899px)").matches;
 
 function paint(frame: Frame) {
   if (!view) return;
+  shown = Math.max(0, view.frames.indexOf(frame));
   view.graph.show(frame);
   $("#stage-caption").innerHTML = rich(frame.caption);
-  $("#stage-work").textContent = frame.work ? `${frame.work} relaxations` : "";
+  $("#stage-work").textContent = frame.work ? `${frame.work} relaxation${frame.work === 1 ? "" : "s"}` : "";
   $("#stage-detail").replaceChildren(
     ...[karpTable(frame, view.bundle), boundChart(frame)].filter((x): x is HTMLElement => x !== null),
   );
+}
+
+function stop() {
+  if (timer !== null) window.clearInterval(timer);
+  timer = null;
+}
+
+// Play the current view's frames from `from` to the end, at the shared playback speed.
+function play(from: number) {
+  stop();
+  if (!view) return;
+  const list = view.frames;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    paint(list[list.length - 1]);
+    return;
+  }
+  let i = from;
+  paint(list[i]);
+  timer = window.setInterval(() => {
+    i += 1;
+    paint(list[i]);
+    if (i >= list.length - 1) stop();
+  }, 1100 / playbackSpeed());
 }
 
 async function enter(index: number) {
   if (index === current) return;
   current = index;
   const step = STEPS[index];
-  if (timer !== null) window.clearInterval(timer);
-  timer = null;
+  stop();
 
   const bundle = await getBundle(step.graph);
   if (current !== index) return; // the reader scrolled on while it loaded
   const key = `${step.graph}/${step.method}`;
   if (view?.key !== key) {
-    view = { key, graph: new GraphView($("#stage-graph"), bundle), frames: frames(bundle, step.method), bundle };
-    $("#stage-title").textContent = `${bundle.title} · ${step.method.replace("_", " + ")}`;
+    // Keep the drawing small enough on a phone that the step's text still shows under the stage.
+    const graph = new GraphView($("#stage-graph"), bundle, () => window.innerHeight * (narrow() ? 0.34 : 0.5));
+    view = { key, graph, frames: frames(bundle, step.method), bundle };
+    $("#stage-title").textContent = `${bundle.title} · ${nameOf(step.method)}`;
+    $("#stage-legend").replaceChildren(legend(graph.gains, false));
   }
   const list = view.frames;
-  if (step.show === "start") {
-    paint({ ...list[0], caption: bundle.blurb });
-  } else if (step.show === "end") {
-    paint(list[list.length - 1]);
-  } else {
-    let i = 0;
-    paint(list[0]);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      paint(list[list.length - 1]);
-      return;
-    }
-    timer = window.setInterval(() => {
-      i += 1;
-      paint(list[i]);
-      if (i >= list.length - 1 && timer !== null) {
-        window.clearInterval(timer);
-        timer = null;
-      }
-    }, 1100);
-  }
+  $<HTMLButtonElement>("#replay").hidden = step.show !== "play";
+  if (step.show === "start") paint({ ...list[0], caption: bundle.blurb });
+  else if (step.show === "end") paint(list[list.length - 1]);
+  else play(0);
 }
 
 function main() {
@@ -171,6 +195,16 @@ function main() {
   );
   steps.querySelectorAll(".step").forEach((s) => observer.observe(s));
   enter(0);
+
+  $("#replay").addEventListener("click", () => play(0));
+  const speed = $("#speed");
+  speed.textContent = speedLabel();
+  speed.addEventListener("click", () => {
+    cycleSpeed();
+    speed.textContent = speedLabel();
+    if (timer !== null) play(shown); // carry on from here at the new speed
+  });
+
 
   loadIndex()
     .then((index) => ($("#backend").textContent = `Data from dmdp at ${index.backend.commit}.`))

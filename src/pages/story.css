@@ -20,11 +20,40 @@
   margin-bottom: 8px;
 }
 
+/* The graph view sizes itself to the room it's given (see story.ts), so no max-height here:
+   one would cut the labels off the bottom of the drawing. */
 #stage-graph {
-  width: auto;
-  max-width: 100%;
-  max-height: 52vh;
   margin: 0 auto;
+}
+
+.stage-head {
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+button.tool {
+  appearance: none;
+  min-width: 36px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 13px var(--sans);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button.tool[hidden] {
+  display: none;
 }
 
 .steps {
@@ -61,10 +90,6 @@
     padding: 8px 0;
   }
 
-  #stage-graph {
-    max-height: 34vh;
-  }
-
   .stage .caption {
     font-size: 15px;
     min-height: 4.6em;
@@ -83,3 +108,4 @@
 .story > * {
   min-width: 0;
 }
+
