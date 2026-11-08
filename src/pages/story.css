@@ -1,0 +1,80 @@
+/* Steps scroll past a stage that stays put: beside them on wide screens, above them on phones. */
+.story {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 48px;
+}
+
+.stage {
+  order: 2;
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  padding: 16px 0;
+}
+
+.stage-head {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--sans);
+  margin-bottom: 8px;
+}
+
+#stage-graph {
+  width: auto;
+  max-width: 100%;
+  max-height: 52vh;
+  margin: 0 auto;
+}
+
+.steps {
+  order: 1;
+}
+
+.step {
+  min-height: 80vh;
+  padding: 24px 0;
+  opacity: 0.35;
+  transition: opacity 400ms var(--ease);
+}
+
+.step.active {
+  opacity: 1;
+}
+
+.step:last-child {
+  min-height: 60vh;
+}
+
+@media (max-width: 899px) {
+  .story {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .stage {
+    order: 0;
+    top: 0;
+    z-index: 2;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 0;
+  }
+
+  #stage-graph {
+    max-height: 34vh;
+  }
+
+  .stage .caption {
+    font-size: 15px;
+    min-height: 4.6em;
+  }
+
+  .stage .detail {
+    display: none;
+  }
+
+  .step {
+    min-height: 70vh;
+  }
+}

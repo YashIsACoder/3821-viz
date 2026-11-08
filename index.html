@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#141414" />
+    <title>Skipping the Work</title>
+    <meta name="description" content="How to find the best long-run average reward in a deterministic MDP, and when you can safely skip most of the work." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="top">
+        <a href="./index.html" aria-current="page">The idea</a>
+        <a href="./compare.html">Race the methods</a>
+      </nav>
+
+      <header class="hero">
+        <h1>Skipping the work</h1>
+        <p class="lede">
+          Finding the best long-run average reward in a deterministic MDP comes down to finding cycles
+          with the highest mean. This page walks through the standard way to do that, then our idea for
+          proving, cheaply, that whole parts of the graph don't need solving. Scroll to step through it.
+        </p>
+      </header>
+
+      <div class="story">
+        <div class="stage" aria-live="polite">
+          <div class="stage-head small"><span id="stage-title"></span><span id="stage-work"></span></div>
+          <div id="stage-graph"></div>
+          <p class="caption" id="stage-caption"></p>
+          <div class="detail" id="stage-detail"></div>
+        </div>
+        <div class="steps" id="steps"></div>
+      </div>
+
+      <footer>
+        <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
+        <div class="small">
+          Built from the <code>dmdp</code> C++ library, COMP3821 research project.<br />
+          Every number here is computed by the library, not by this page. <span id="backend"></span>
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="./src/pages/story.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,169 @@
+.picker {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  scrollbar-width: thin;
+  font-family: var(--sans);
+}
+
+.picker button,
+.tabs button {
+  appearance: none;
+  flex: none;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font: 14px var(--sans);
+  cursor: pointer;
+}
+
+.picker button.open {
+  border-style: dashed;
+}
+
+.picker button[aria-pressed="true"] {
+  color: var(--bg);
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.graph-info {
+  margin: 16px 0 8px;
+}
+
+/* The clock and the work bars stay in view while you scroll the panels. */
+.race-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(6px);
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bars {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: 8.5em 1fr 4.5em;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-2);
+}
+
+.bar-track {
+  height: 10px;
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 0 4px 4px 0;
+  background: var(--c);
+  transition: width 350ms var(--ease);
+}
+
+.bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.bar.done .bar-name {
+  color: var(--ink);
+}
+
+.tabs {
+  display: none;
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+
+.tabs button[aria-selected="true"] {
+  color: var(--ink);
+  border-color: var(--c);
+  box-shadow: inset 0 -2px 0 var(--c);
+}
+
+.panels {
+  display: grid;
+  grid-template-columns: repeat(var(--lanes, 3), minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 24px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.panel-head .work {
+  margin-left: auto;
+  font-family: var(--sans);
+  font-variant-numeric: tabular-nums;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+  align-self: center;
+}
+
+.about {
+  margin: 4px 0 8px;
+  min-height: 3em;
+}
+
+.graph-slot {
+  margin: 8px 0;
+}
+
+.panel .caption {
+  font-size: 16px;
+  min-height: 4.8em;
+}
+
+@media (max-width: 899px) {
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+  }
+
+  .tabs[hidden] {
+    display: none;
+  }
+
+  .panels {
+    grid-template-columns: 1fr;
+  }
+
+  .panel:not(.focused) {
+    display: none;
+  }
+
+  .about {
+    min-height: 0;
+  }
+
+  .bar {
+    grid-template-columns: 7.5em 1fr 3.5em;
+  }
+}
