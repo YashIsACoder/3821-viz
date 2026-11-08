@@ -1,0 +1,132 @@
+/* The about page: the team, the proofs and the references. */
+
+.team {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+}
+
+.team li {
+  display: grid;
+  align-content: start;
+  gap: 2px;
+}
+
+.team b {
+  font-weight: 400;
+  font-size: 19px;
+}
+
+.team span {
+  color: var(--ink-2);
+  font-size: 16px;
+}
+
+@media (min-width: 700px) {
+  .team {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 32px;
+  }
+}
+
+/* ---- contents ------------------------------------------------------------------------ */
+
+.toc {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  font: 14px var(--sans);
+}
+
+.toc a {
+  display: inline-block;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+
+.toc a:hover {
+  border-color: var(--edge);
+  color: var(--ink);
+}
+
+/* ---- what we proved ------------------------------------------------------------------ */
+
+.theorems {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.theorem {
+  padding: 18px 20px 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  min-width: 0;
+}
+
+.theorem h3 {
+  margin-bottom: 10px;
+}
+
+.theorem p {
+  font-size: 16px;
+}
+
+.theorem .plainly {
+  color: var(--ink-2);
+}
+
+/* Long formulas scroll inside their card rather than widening the page. */
+.theorem .katex-display,
+.theorem p {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+@media (min-width: 900px) {
+  .theorems {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---- known and new ------------------------------------------------------------------- */
+
+.two-col {
+  display: grid;
+  gap: 8px 48px;
+}
+
+.two-col h3 {
+  margin-top: 12px;
+}
+
+@media (min-width: 800px) {
+  .two-col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- references ---------------------------------------------------------------------- */
+
+.refs {
+  margin: 0;
+  padding-left: 1.6em;
+  max-width: 48em;
+  font-size: 15px;
+  color: var(--ink-2);
+}
+
+.refs li {
+  margin-bottom: 8px;
+  padding-left: 4px;
+}

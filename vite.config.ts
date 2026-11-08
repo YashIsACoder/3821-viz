@@ -10,6 +10,7 @@ export default defineConfig({
         story: resolve(__dirname, "index.html"),
         compare: resolve(__dirname, "compare.html"),
         results: resolve(__dirname, "results.html"),
+        about: resolve(__dirname, "about.html"),
       },
     },
   },

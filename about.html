@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#141414" />
+    <title>About the Project</title>
+    <meta name="description" content="Who built it, what we proved, what is known and what is ours, and where the code and data come from." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="top">
+        <a href="./index.html">The idea</a>
+        <a href="./compare.html">The race</a>
+        <a href="./results.html">Results</a>
+        <a href="./about.html" aria-current="page">About</a>
+      </nav>
+
+      <header class="hero">
+        <div class="eyebrow">About</div>
+        <h1>The project and the people</h1>
+        <p class="lede">
+          <em>Skipping the work</em> is a research project for COMP3821 at UNSW Sydney. We studied how to
+          find the best long-run average reward in a deterministic MDP, proposed a cheap test that lets a
+          solver skip parts of the graph, proved it safe, and measured when it pays off.
+        </p>
+        <ul class="toc">
+          <li><a href="#team">Who did what</a></li>
+          <li><a href="#proofs">What we proved</a></li>
+          <li><a href="#known">Known and new</a></li>
+          <li><a href="#code">Code and data</a></li>
+          <li><a href="#refs">References</a></li>
+        </ul>
+      </header>
+
+      <section class="block" id="team">
+        <h2>Who did what</h2>
+        <ul class="team">
+          <li>
+            <b>Yashwanth Madan</b>
+            <span>The <code>dmdp</code> library: SCCs, Karp, the cascade and its bounds, exact fractions,
+              brute force and the run traces. The skip-condition proof, experiments E3 and E4, and this site.</span>
+          </li>
+          <li>
+            <b>Khoi Nguyen Nguyen</b>
+            <span>The experiment runner, and experiments E1 (do all methods agree?) and E2 (when does
+              skipping help?).</span>
+          </li>
+          <li>
+            <b>Trung Hieu Nguyen</b>
+            <span>Howard's policy iteration, the running-time proof, and experiments E5 (how running time
+              grows) and E6 (Howard against the cascade).</span>
+          </li>
+          <li>
+            <b>Ting Bai</b>
+            <span>The hybrid solver, most of the test suite, the Asadi generator, the exactness proof, the
+              δ<sub>k</sub> stall study (E7) and the final experiments.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="block" id="proofs">
+        <h2>What we proved</h2>
+        <p class="lede tex">
+          Write $\lambda(K)$ for the best cycle mean inside an SCC $K$, $D(K)$ for the best gain you can
+          reach by leaving it, and $D_k(v)$ for the most reward a $k$-step walk inside $K$ can collect
+          on its way to $v$. Then $\delta_k(K) = \max_v \bigl(D_k(v) - D_{k-1}(v)\bigr)$.
+        </p>
+        <div class="theorems">
+          <article class="theorem">
+            <div class="eyebrow">Soundness</div>
+            <h3>The bounds never undershoot</h3>
+            <p class="tex">For every SCC with a cycle and every $k \ge 1$:
+              $\delta_k(K) \ge \lambda(K)$, $\;\delta_{k+1}(K) \le \delta_k(K)$, and the largest edge
+              weight $M(K) = \delta_1(K)$.</p>
+            <p class="plainly">So if any bound is at most $D(K)$, no cycle inside $K$ beats leaving, and
+              skipping $K$ is safe. Each extra row of Karp's table can only tighten the bound.</p>
+          </article>
+          <article class="theorem">
+            <div class="eyebrow">Exactness</div>
+            <h3>Skipping never changes the answer</h3>
+            <p class="tex">With exact arithmetic and sound bounds, the cascade returns $g^*(v)$ for every
+              state $v$, whichever tests are switched on.</p>
+            <p class="plainly">The proof goes SCC by SCC, sinks first: by the time an SCC is reached,
+              everything it can step into already has its right gain.</p>
+          </article>
+          <article class="theorem">
+            <div class="eyebrow">Running time</div>
+            <h3>Pay only for what you solve</h3>
+            <p class="tex">$O\bigl(n + m + \sum_{K \text{ solved}} n_K m_K + \sum_{K \text{ skipped}} k_K m_K\bigr)$,
+              where $k_K$ is the number of rows built before $K$ was skipped. In the worst case that is
+              $O(nm)$, the same as plain Karp, and a single SCC reaches it.</p>
+            <p class="plainly">A skipped SCC costs only the rows it took to rule it out, and the tests
+              themselves are paid for by those rows.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="block" id="known">
+        <h2>What was known, and what is ours</h2>
+        <div class="two-col">
+          <div>
+            <h3>Established before us</h3>
+            <ul class="plain">
+              <li>A deterministic MDP's optimal gain from a state is the best mean of a cycle reachable
+                from it (Puterman 1994; Karp 1978).</li>
+              <li>Karp's algorithm finds the best cycle mean of a strongly connected graph in
+                O(nm) time (Karp 1978).</li>
+              <li>The gain is constant on each SCC, so SCCs can be solved one at a time, sinks first
+                (folklore; compare Ashok et al. 2017).</li>
+              <li>Reading the best cycle off Karp's table the way Karp suggested can fail (Chaturvedi
+                and McConnell 2017).</li>
+              <li>Howard's policy iteration is usually the fastest in practice (Dasdan 2004), but there
+                are graphs where it needs many iterations (Asadi, Chatterjee and de Raaij 2025).</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Ours</h3>
+            <ul class="plain">
+              <li>The cascade: test an SCC with cheap upper bounds before solving it, and skip it when
+                a bound is no better than leaving. The δ<sub>k</sub> bound reuses the rows Karp would
+                build anyway.</li>
+              <li>Proofs that the bounds are sound, that the cascade is exact, and of its running time.</li>
+              <li>The hybrid: the cheapest test, then Howard on each SCC that is left, with Karp as a
+                fallback.</li>
+              <li>The <code>dmdp</code> library and seven experiments on 136 graphs.</li>
+            </ul>
+            <p class="small">
+              Related ideas exist: action elimination for MDPs (MacQueen 1967; Grinold 1973), topological
+              value iteration (Dai et al. 2011), and stopping Karp early (Hartmann and Orlin 1993; Dasdan
+              and Gupta 1998). The cascade belongs to the same family: sound bounds, used to avoid work.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="code">
+        <h2>Code and data</h2>
+        <div class="why-grid">
+          <div class="why">
+            <h3>The library</h3>
+            <p><code>dmdp</code>, in C++: Tarjan's SCCs, Karp, the cascade, Howard, the hybrid, exact
+              fractions, a brute-force checker, and <code>dmdp viz</code>, which records a run step by
+              step for this site.</p>
+          </div>
+          <div class="why">
+            <h3>The graphs</h3>
+            <p>Generated families that test one thing at a time, real circuits from
+              <a href="https://github.com/alidasdan/graph-benchmarks">Dasdan's benchmark suite</a>, and
+              Asadi et al.'s family that is hard for Howard.</p>
+          </div>
+          <div class="why">
+            <h3>This site</h3>
+            <p>TypeScript and plain SVG, with KaTeX for the maths. Every run you watch was recorded by the
+              library at one pinned commit. <a href="https://github.com/YashIsACoder/3821-viz">Source on GitHub</a>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="refs">
+        <h2>References</h2>
+        <ol class="refs">
+          <li>Asadi, Chatterjee and de Raaij (2025). <a href="https://arxiv.org/abs/2506.12254">arXiv:2506.12254</a>.</li>
+          <li>Ashok, Chatterjee, Daca, Křetínský and Meggendorfer (2017). Value iteration for long-run average reward in Markov decision processes. <em>CAV</em>.</li>
+          <li>Chaturvedi and McConnell (2017). A note on finding minimum mean cycle. <em>Information Processing Letters</em> 127.</li>
+          <li>Dai, Mausam, Weld and Goldsmith (2011). Topological value iteration algorithms. <em>Journal of Artificial Intelligence Research</em> 42.</li>
+          <li>Dasdan (2004). Experimental analysis of the fastest optimum cycle ratio and mean algorithms. <em>ACM TODAES</em> 9(4).</li>
+          <li>Dasdan and Gupta (1998). Faster maximum and minimum mean cycle algorithms for system-performance analysis. <em>IEEE TCAD</em> 17(10).</li>
+          <li>Grinold (1973). Elimination of suboptimal actions in Markov decision problems. <em>Operations Research</em> 21(3).</li>
+          <li>Hartmann and Orlin (1993). Finding minimum cost to time ratio cycles with small integral transit times. <em>Networks</em> 23(6).</li>
+          <li>Howard (1960). <em>Dynamic Programming and Markov Processes</em>. MIT Press.</li>
+          <li>Karp (1978). A characterization of the minimum cycle mean in a digraph. <em>Discrete Mathematics</em> 23(3), 309–311.</li>
+          <li>MacQueen (1967). A test for suboptimal actions in Markovian decision problems. <em>Operations Research</em> 15(3).</li>
+          <li>Madani (2002). Polynomial value iteration algorithms for deterministic MDPs. <em>UAI</em>.</li>
+          <li>Puterman (1994). <em>Markov Decision Processes: Discrete Stochastic Dynamic Programming</em>. Wiley.</li>
+          <li>Sutton and Barto (2018). <em>Reinforcement Learning: An Introduction</em>, 2nd edition. MIT Press.</li>
+          <li>Tarjan (1972). Depth-first search and linear graph algorithms. <em>SIAM Journal on Computing</em> 1(2).</li>
+        </ol>
+      </section>
+
+      <footer>
+        <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
+        <div class="small">
+          A COMP3821 research project at UNSW Sydney by Yashwanth Madan, Khoi Nguyen Nguyen, Trung Hieu
+          Nguyen and Ting Bai.<br />
+          Every number on this site comes from the <code>dmdp</code> C++ library and our experiment
+          summaries, not from the page itself.
+        </div>
+      </footer>
+    </div>
+    <script type="module" src="./src/pages/about.ts"></script>
+  </body>
+</html>
