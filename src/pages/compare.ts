@@ -6,6 +6,7 @@
 import "katex/dist/katex.min.css";
 import "../style.css";
 import "./compare.css";
+import { nameOf, shortNameOf } from "../lib/methods";
 import { frameAtWork, frames, type Frame } from "../lib/timeline";
 import { loadBundle, loadIndex, methodsOf, METHODS, toBundle, type Bundle, type IndexEntry, type Method } from "../lib/types";
 import { rich } from "../render/caption";
@@ -15,22 +16,15 @@ import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
 import { Player } from "../render/player";
 
-const NAMES: Record<string, string> = {
-  scc_karp: "SCC + Karp",
-  cascade: "Cascade (ours)",
-  hybrid: "Hybrid (ours)",
-  howard: "Howard",
-};
 const ABOUT: Record<string, string> = {
   scc_karp: "The standard pipeline: split into SCCs, run Karp's algorithm on every one, combine sinks first.",
   cascade: "Our idea: the same, but first try cheap bounds that can prove an SCC isn't worth solving, and skip it.",
   hybrid: "Our cascade's cheapest bound first; SCCs it can't skip go to Howard, with Karp taking over if Howard runs long.",
   howard: "Policy iteration (Howard, 1960): pick actions, see what they earn, switch to better ones, repeat.",
 };
-const SHORT: Record<string, string> = { scc_karp: "Karp", cascade: "Cascade", hybrid: "Hybrid", howard: "Howard" };
 const info: MethodInfo = {
-  name: (m) => NAMES[m] ?? m,
-  short: (m) => SHORT[m] ?? m,
+  name: nameOf,
+  short: shortNameOf,
   colour: (m) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)"),
 };
 

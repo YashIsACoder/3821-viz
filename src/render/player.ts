@@ -20,7 +20,16 @@ function saveSpeed() {
   }
 }
 
-const label = (s: number) => (s === 0.5 ? "½×" : `${s}×`);
+export const speedLabel = (s: number = speed) => (s === 0.5 ? "½×" : `${s}×`);
+
+export const playbackSpeed = () => speed;
+
+// Next speed round the list, remembered for next time.
+export function cycleSpeed(): number {
+  speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+  saveSpeed();
+  return speed;
+}
 
 export class Player {
   private tick = 0;
@@ -49,7 +58,7 @@ export class Player {
     this.range = root.querySelector("input")!;
     this.readout = root.querySelector(".readout")!;
     this.range.max = String(count - 1);
-    this.speedButton.textContent = label(speed);
+    this.speedButton.textContent = speedLabel();
 
     root.querySelector('[data-act="back"]')!.addEventListener("click", () => {
       this.pause();
@@ -63,7 +72,7 @@ export class Player {
     this.speedButton.addEventListener("click", () => {
       speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
       saveSpeed();
-      this.speedButton.textContent = label(speed);
+      this.speedButton.textContent = speedLabel();
       if (this.timer !== null) this.schedule(); // pick up the new speed straight away
     });
     this.range.addEventListener("input", () => {
