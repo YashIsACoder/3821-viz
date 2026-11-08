@@ -7,7 +7,7 @@ import { frames, type Frame } from "../lib/timeline";
 import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
-import { circuits, familyBars, loadResults, sources, tiles } from "../render/findings";
+import { loadResults, tiles } from "../render/findings";
 import { GraphView } from "../render/graphView";
 import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
@@ -206,13 +206,11 @@ function main() {
     if (timer !== null) play(shown); // carry on from here at the new speed
   });
 
+  // The basics use a little maths too.
+  document.querySelectorAll<HTMLElement>("#mdp dd").forEach((dd) => (dd.innerHTML = typeset(dd.innerHTML)));
+
   loadResults()
-    .then((r) => {
-      $("#tiles").innerHTML = tiles(r);
-      $("#families").innerHTML = familyBars(r);
-      $("#circuits").innerHTML = circuits(r);
-      $("#sources").innerHTML = sources(r);
-    })
+    .then((r) => ($("#tiles").innerHTML = tiles(r)))
     .catch(() => ($("#found").hidden = true));
 
   loadIndex()

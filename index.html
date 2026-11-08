@@ -12,7 +12,9 @@
     <div class="wrap">
       <nav class="top">
         <a href="./index.html" aria-current="page">The idea</a>
-        <a href="./compare.html">Race the methods</a>
+        <a href="./compare.html">The race</a>
+        <a href="./results.html">Results</a>
+        <a href="./about.html">About</a>
       </nav>
 
       <header class="hero">
@@ -28,37 +30,98 @@
           the loops with the best average. This page shows the standard way to find them, and our idea:
           a cheap test that proves whole parts of the board aren't worth searching.
         </p>
-        <a class="scroll-cue" href="#why">Why it matters ↓</a>
+        <div class="cta">
+          <a class="button" href="#mdp">Start with the basics ↓</a>
+          <a class="button ghost" href="./compare.html">Race the methods →</a>
+        </div>
       </header>
 
-      <section class="block" id="why">
-        <h2>Why it matters</h2>
+      <section class="block" id="mdp">
+        <div class="eyebrow">The basics</div>
+        <h2>What is an MDP?</h2>
         <p class="lede">
-          The “board” is a <em>deterministic Markov decision process</em> (DMDP), and the best average is
-          its <em>gain</em>. The same loop-finding problem turns up well outside games:
+          A <em>Markov decision process</em> (MDP) is the standard way to describe a problem where you
+          make one decision after another and each one changes what you can do next. It is the model
+          underneath reinforcement learning. It has five parts:
+        </p>
+        <dl class="terms">
+          <div><dt>States</dt><dd>Where you can be: a square on the board, a machine's settings, a robot's position.</dd></div>
+          <div><dt>Actions</dt><dd>What you can do in each state. Each one moves you to a next state.</dd></div>
+          <div><dt>Rewards</dt><dd>What each action pays, or costs if it is negative.</dd></div>
+          <div><dt>Policy</dt><dd>A rule that picks an action in every state. This is what you are trying to find.</dd></div>
+          <div><dt>Gain</dt><dd>The average reward per step a policy earns in the long run. The best one is written $g^*$.</dd></div>
+        </dl>
+
+        <div class="compare-grid">
+          <div>
+            <h3>Deterministic or random</h3>
+            <p>In general an action leads to a next state <em>at random</em>, like a robot whose wheels
+              sometimes slip. We study the <em>deterministic</em> case, where each action always leads to
+              the same place. Then an MDP is just a graph: states are dots, actions are arrows, and every
+              policy ends up going round a loop forever.</p>
+          </div>
+          <div>
+            <h3>Average or discounted</h3>
+            <p>Most reinforcement learning <em>discounts</em> the future: a reward next year counts for
+              less than one today. For tasks that never stop, like running a data centre or a factory,
+              the natural score is the long-run <em>average</em> instead. It needs different tools, and
+              it's the one we use.</p>
+          </div>
+          <div>
+            <h3>Learning or planning</h3>
+            <p>A reinforcement-learning agent has to learn by trial and error, because it doesn't know
+              the MDP. <em>Planning</em> is the other half: when the MDP is known, compute the best policy
+              outright. Learning agents plan inside the model they have learned, so faster, exact
+              planning helps both.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="block" id="why">
+        <div class="eyebrow">Why it matters</div>
+        <h2>The same question, in many places</h2>
+        <p class="lede">
+          “Which loop has the best average?” is the <em>maximum mean cycle</em> problem. Solving a
+          deterministic MDP's average reward is exactly this problem, and it turns up well beyond games:
         </p>
         <div class="why-grid">
           <div class="why">
-            <h3>Chips</h3>
-            <p>In a digital circuit, the loop with the longest average delay sets how fast the clock can tick.
-              The benchmark graphs we test on are real circuits.</p>
+            <h3>Reinforcement learning</h3>
+            <p>Agents that run for good, such as controllers and schedulers, are scored by average reward.
+              Planners often work in a learned model that is deterministic, as MuZero's is.</p>
           </div>
           <div class="why">
-            <h3>Pipelines</h3>
+            <h3>Chips</h3>
+            <p>In a digital circuit, the loop with the longest average delay sets how fast the clock can
+              tick. The real-world graphs we test on are circuits.</p>
+          </div>
+          <div class="why">
+            <h3>Production and pipelines</h3>
             <p>In a production line or a program that repeats, the slowest repeating cycle caps how much
               gets done per hour.</p>
           </div>
           <div class="why">
+            <h3>Checking systems</h3>
+            <p>Tools that verify software and hardware compute long-run averages, such as the share of time
+              a system is up, on MDP models of it.</p>
+          </div>
+          <div class="why">
             <h3>Games</h3>
-            <p>Mean-payoff games, used to design systems that run forever and keep behaving well, are the
+            <p>Mean-payoff games, used to design systems that keep behaving well forever, are the
               two-player version of the same question.</p>
+          </div>
+          <div class="why">
+            <h3>Network flows</h3>
+            <p>A classic way to find the cheapest flow through a network repeatedly cancels the cycle with
+              the best mean, so it runs this problem in a loop.</p>
           </div>
         </div>
       </section>
 
       <section class="block story-block">
-        <h2>How it works</h2>
-        <p class="small">Scroll to step through it. The picture follows along.</p>
+        <div class="eyebrow">How it works</div>
+        <h2>From a graph to the answer, and what we skip</h2>
+        <p class="small">Scroll to step through it. The picture follows along; ↻ plays a step again.</p>
         <div class="story">
           <div class="stage" aria-live="polite">
             <div class="stage-head small">
@@ -78,54 +141,51 @@
         </div>
       </section>
 
+      <section class="block" id="project">
+        <div class="eyebrow">The project</div>
+        <h2>What we did</h2>
+        <div class="project-grid">
+          <a class="project" href="./about.html#proofs">
+            <b>A skip test, proved safe</b>
+            <span>Cheap upper bounds that rule out an SCC before solving it, with proofs that skipping is
+              sound, never changes the answer, and costs no more than Karp in the worst case.</span>
+          </a>
+          <a class="project" href="./compare.html?g=dasdan">
+            <b>A hybrid solver</b>
+            <span>The cheapest test first, then Howard's method on each SCC that is left, with Karp as a
+              safety net when Howard runs long.</span>
+          </a>
+          <a class="project" href="./about.html#code">
+            <b>A C++ library</b>
+            <span><code>dmdp</code>: Karp, the cascade, Howard and the hybrid, all in exact fractions, with
+              a brute-force checker and the step-by-step recordings this site plays.</span>
+          </a>
+          <a class="project" href="./results.html">
+            <b>Seven experiments</b>
+            <span>136 graphs, from generated families to real circuits: is it exact, is it safe, when does
+              it help, and how does it compare with Howard?</span>
+          </a>
+        </div>
+      </section>
+
       <section class="block" id="found">
         <div class="eyebrow">What we found</div>
         <h2>Exact, safe, and sometimes a lot less work</h2>
         <div class="tiles" id="tiles"></div>
-
-        <h3>Where skipping helps, and where it doesn't</h3>
-        <p class="small">
-          Share of Karp's work the cascade avoided, by kind of graph. It only pays when SCCs further along
-          are better than the ones before them.
+        <p class="lede">
+          Skipping pays off when SCCs further along are better than the ones before them, and does
+          nothing when they are worse. On real circuits most SCCs have no cycle at all, so there is little
+          to skip, and Howard's method is still the one to beat there.
         </p>
-        <div class="families" id="families"></div>
-
-        <h3>On real circuits</h3>
-        <div id="circuits"></div>
-        <p class="small" id="sources"></p>
-      </section>
-
-      <section class="block" id="team">
-        <h2>Who did what</h2>
-        <ul class="team">
-          <li>
-            <b>Yashwanth Madan</b>
-            <span>The <code>dmdp</code> library: SCCs, Karp, the cascade and its bounds, exact fractions,
-              brute force and the run traces. The skip-condition proof, experiments E3 and E4, and this site.</span>
-          </li>
-          <li>
-            <b>Khoi Nguyen Nguyen</b>
-            <span>The experiment runner, and experiments E1 (do all methods agree?) and E2 (when does
-              skipping help?).</span>
-          </li>
-          <li>
-            <b>Trung Hieu Nguyen</b>
-            <span>Howard's policy iteration, the running-time proof, and experiments E5 (how running time
-              grows) and E6 (Howard against the cascade).</span>
-          </li>
-          <li>
-            <b>Ting Bai</b>
-            <span>The hybrid solver, most of the test suite, the Asadi generator, the exactness proof, the
-              δ<sub>k</sub> stall study (E7) and the final experiments.</span>
-          </li>
-        </ul>
+        <p><a href="./results.html">All the results, experiment by experiment →</a></p>
       </section>
 
       <footer>
         <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
         <div class="small">
-          Built from the <code>dmdp</code> C++ library, COMP3821 research project.<br />
-          Every number here is computed by the library, not by this page. <span id="backend"></span>
+          A COMP3821 research project at UNSW Sydney by Yashwanth Madan, Khoi Nguyen Nguyen, Trung Hieu
+          Nguyen and Ting Bai. <a href="./about.html#team">Who did what →</a><br />
+          Every number here is computed by the <code>dmdp</code> C++ library, not by this page. <span id="backend"></span>
         </div>
       </footer>
     </div>
