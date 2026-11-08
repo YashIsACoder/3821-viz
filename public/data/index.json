@@ -1,0 +1,118 @@
+{
+ "backend": {
+  "commit": "06a994f",
+  "dirty": false
+ },
+ "graphs": [
+  {
+   "id": "proposal",
+   "title": "The worked example",
+   "n": 3,
+   "sccs": 2,
+   "work": {
+    "scc_karp": 7,
+    "cascade": 7,
+    "howard": 21
+   }
+  },
+  {
+   "id": "fraction",
+   "title": "An exact fraction",
+   "n": 4,
+   "sccs": 2,
+   "work": {
+    "scc_karp": 10,
+    "cascade": 9,
+    "howard": 23
+   }
+  },
+  {
+   "id": "trap",
+   "title": "The policy trap",
+   "n": 2,
+   "sccs": 1,
+   "work": {
+    "scc_karp": 6,
+    "cascade": 6,
+    "howard": 8
+   }
+  },
+  {
+   "id": "two-cycle",
+   "title": "When δₖ stalls",
+   "n": 2,
+   "sccs": 1,
+   "work": {
+    "scc_karp": 4,
+    "cascade": 4,
+    "howard": 6
+   }
+  },
+  {
+   "id": "chain-rise",
+   "title": "Gains rise to the sink",
+   "n": 15,
+   "sccs": 5,
+   "work": {
+    "scc_karp": 60,
+    "cascade": 12,
+    "howard": 141
+   }
+  },
+  {
+   "id": "chain-fall",
+   "title": "Gains fall to the sink",
+   "n": 15,
+   "sccs": 5,
+   "work": {
+    "scc_karp": 60,
+    "cascade": 60,
+    "howard": 63
+   }
+  },
+  {
+   "id": "periodic",
+   "title": "A long best cycle",
+   "n": 7,
+   "sccs": 1,
+   "work": {
+    "scc_karp": 105,
+    "cascade": 105,
+    "howard": 74
+   }
+  },
+  {
+   "id": "asadi",
+   "title": "Hard for Howard",
+   "n": 6,
+   "sccs": 1,
+   "work": {
+    "scc_karp": 144,
+    "cascade": 144,
+    "howard": 606
+   }
+  },
+  {
+   "id": "random",
+   "title": "A random graph",
+   "n": 14,
+   "sccs": 10,
+   "work": {
+    "scc_karp": 22,
+    "cascade": 9,
+    "howard": 56
+   }
+  },
+  {
+   "id": "dasdan",
+   "title": "A benchmark graph",
+   "n": 18,
+   "sccs": 6,
+   "work": {
+    "scc_karp": 103,
+    "cascade": 98,
+    "howard": 214
+   }
+  }
+ ]
+}

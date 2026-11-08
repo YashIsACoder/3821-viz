@@ -1,0 +1,62 @@
+[
+  {
+    "id": "proposal",
+    "title": "The worked example",
+    "blurb": "Two SCCs. The cycle 0 → 1 → 0 has mean 2, but leaving to state 2 earns 3, so the bound lets cascade skip Karp on it.",
+    "case": "proposal_example"
+  },
+  {
+    "id": "fraction",
+    "title": "An exact fraction",
+    "blurb": "A 3-cycle of total 7 has gain 7/3. Every gain on this site is an exact fraction, never a rounded float.",
+    "case": "fraction_gain"
+  },
+  {
+    "id": "trap",
+    "title": "The policy trap",
+    "blurb": "Both states have gain 1, yet the 2-cycle earns 0. Keeping the gain is not enough to pick a good action.",
+    "case": "trap_gain_preserving"
+  },
+  {
+    "id": "two-cycle",
+    "title": "When δₖ stalls",
+    "blurb": "A 2-cycle with weights 0 and 10: λ = 5, but δₖ = 10 for every k, so the δ bound never gets close.",
+    "case": "two_cycle_periodic"
+  },
+  {
+    "id": "chain-rise",
+    "title": "Gains rise to the sink",
+    "blurb": "Five SCCs in a chain, each worse than the next. Every SCC but the sink can be skipped.",
+    "gen": ["chain", 5, 3, "rise", 4]
+  },
+  {
+    "id": "chain-fall",
+    "title": "Gains fall to the sink",
+    "blurb": "The same chain reversed. Each SCC beats everything after it, so no sound bound can skip anything.",
+    "gen": ["chain", 5, 3, "fall", 4]
+  },
+  {
+    "id": "periodic",
+    "title": "A long best cycle",
+    "blurb": "One SCC whose best cycle has length 3. The δ bound needs many rows before it says anything useful.",
+    "case": "gen_periodic_3"
+  },
+  {
+    "id": "asadi",
+    "title": "Hard for Howard",
+    "blurb": "Asadi, Chatterjee and de Raaij (2025) built this family so policy iteration needs many rounds.",
+    "case": "gen_asadi_pn_3"
+  },
+  {
+    "id": "random",
+    "title": "A random graph",
+    "blurb": "14 states, at most 2 actions each. Most SCCs are single states; a few hold the interesting cycles.",
+    "gen": ["random", 14, 2, 9, 11]
+  },
+  {
+    "id": "dasdan",
+    "title": "A benchmark graph",
+    "blurb": "The example graph from Dasdan's 2004 benchmark suite: 18 states and 6 SCCs.",
+    "case": "dasdan_core_example"
+  }
+]
