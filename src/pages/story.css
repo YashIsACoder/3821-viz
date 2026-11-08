@@ -324,8 +324,7 @@ marker path.head.on {
 
 /* ---- the basics: icons for the five parts, then three pictures ------------------------- */
 
-.parts,
-.uses {
+.parts {
   list-style: none;
   margin: 20px 0 0;
   padding: 0;
@@ -347,19 +346,11 @@ marker path.head.on {
     grid-template-columns: repeat(5, 1fr);
   }
 
-  .uses {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
-@media (min-width: 1000px) {
-  .uses {
-    grid-template-columns: repeat(6, 1fr);
-  }
-}
 
-.parts li,
-.uses li {
+
+.parts li {
   display: grid;
   justify-items: start;
   gap: 2px;
@@ -368,22 +359,19 @@ marker path.head.on {
   background: var(--surface);
 }
 
-.parts svg,
-.uses svg {
+.parts svg {
   width: 40px;
   height: 40px;
   margin-bottom: 6px;
 }
 
-.parts b,
-.uses b {
+.parts b {
   font-weight: 500;
   font-size: 15px;
   color: var(--ink);
 }
 
-.parts span,
-.uses span {
+.parts span {
   font-size: 13px;
   line-height: 1.35;
   color: var(--muted);
@@ -498,12 +486,321 @@ svg text {
   }
 }
 
-.uses svg {
+/* ---- why it matters: tap an example to see its graph ---------------------------------- */
+
+.ex-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (min-width: 800px) {
+  .ex-tabs {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.ex-tab {
+  appearance: none;
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 200ms, background 200ms, transform 200ms var(--ease);
+}
+
+.ex-tab:hover {
+  border-color: var(--edge);
+  transform: translateY(-2px);
+}
+
+.ex-tab[aria-selected="true"] {
+  border-color: var(--gold);
+  background: var(--surface-2);
+}
+
+.ex-tab svg {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
   fill: none;
   stroke: var(--gold);
   stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.ex-tab b {
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.ex-tab span {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.ex-tab[aria-selected="true"] span {
+  color: var(--gold);
+}
+
+.ex-panel {
+  display: grid;
+  gap: 16px 28px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 18px;
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  background: var(--surface);
+  animation: ex-in 350ms var(--ease);
+}
+
+@keyframes ex-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (min-width: 800px) {
+  .ex-panel {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
+}
+
+.ex-graph {
+  display: block;
+  width: 100%;
+  max-height: 340px;
+}
+
+.ex-edge {
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1.5;
+  opacity: 0.8;
+}
+
+.ex-edge.on {
+  stroke: var(--gold);
+  stroke-width: 3;
+  opacity: 1;
+}
+
+#ex-head-on path {
+  fill: var(--gold);
+}
+
+.ex-reward rect {
+  fill: var(--bg);
+  stroke: var(--line);
+}
+
+.ex-reward text {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--muted);
+}
+
+.ex-reward.on rect {
+  stroke: var(--gold);
+}
+
+.ex-reward.on text {
+  fill: var(--ink);
+}
+
+.ex-state circle {
+  fill: var(--surface-2);
+  stroke: var(--ink-2);
+  stroke-width: 2;
+}
+
+.ex-state text {
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+
+.ex-token {
+  fill: var(--gold);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.ex-side {
+  display: grid;
+  gap: 14px;
+  font-family: var(--sans);
+}
+
+.ex-map {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.ex-k {
+  display: inline-block;
+  min-width: 4.6em;
+  margin-right: 8px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.ex-best {
+  display: grid;
+  gap: 2px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.ex-best b {
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--gold);
+}
+
+.ex-mean {
+  font-size: 28px;
+  color: var(--ink);
+}
+
+.ex-mean small {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.ex-why {
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+/* ---- the opening: say plainly that it's a game you can play -------------------------- */
+
+.try-it {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #2f2b1d;
+  color: var(--gold);
+  font: 500 14px var(--sans);
+}
+
+.try-it .arrow-r,
+.try-it .arrow-d {
+  font-size: 18px;
+  animation: nudge 1.4s var(--ease) infinite;
+}
+
+.try-it .arrow-d {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .try-it .arrow-r {
+    display: none;
+  }
+
+  .try-it .arrow-d {
+    display: inline;
+    animation-name: nudge-d;
+  }
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes nudge-d {
+  50% {
+    transform: translateY(4px);
+  }
+}
+
+.pg-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font: 13px var(--sans);
+  color: var(--ink-2);
+}
+
+.pg-badge {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--bg);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.pg-goal b {
+  color: var(--gold);
+}
+
+.pg-callout .pulse {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 1.6s ease-out infinite;
+}
+
+.pg-callout rect,
+.pg-callout path {
+  fill: var(--gold);
+}
+
+.pg-callout text {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--bg);
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+
+.playground {
+  transition: border-color 400ms, box-shadow 400ms;
+}
+
+.playground.won {
+  border-color: var(--good);
+  box-shadow: 0 0 0 3px rgba(131, 193, 103, 0.18);
 }
 
 /* ---- what we did ----------------------------------------------------------------------- */

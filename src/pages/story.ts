@@ -8,6 +8,7 @@ import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
 import { loadResults, tiles } from "../render/findings";
+import { examples } from "../render/examples";
 import { playground } from "../render/playground";
 import { GraphView } from "../render/graphView";
 import { legend } from "../render/legend";
@@ -36,7 +37,7 @@ const STEPS: Step[] = [
     method: "scc_karp",
     show: "play",
     html: `<h2>Solve SCCs, last ones first</h2>
-      <p>Each SCC $K$ is worth $g^* = \max(\lambda(K), D(K))$: its best loop $\lambda$ (Karp's
+      <p>Each SCC $K$ is worth $g^* = \\max(\\lambda(K), D(K))$: its best loop $\\lambda$ (Karp's
       algorithm), or the best place you can leave to, $D$.</p>`,
   },
   {
@@ -44,8 +45,8 @@ const STEPS: Step[] = [
     method: "cascade",
     show: "play",
     html: `<h2>Our idea: prove it can't win</h2>
-      <p>If a cheap upper bound on $\lambda(K)$ is already $\le D(K)$, no loop inside beats leaving.
-      Skip Karp. Here $\delta_2 = 3 \le D = 3$.</p>`,
+      <p>If a cheap upper bound on $\\lambda(K)$ is already $\\le D(K)$, no loop inside beats leaving.
+      Skip Karp. Here $\\delta_2 = 3 \\le D = 3$.</p>`,
   },
   {
     graph: "chain-rise",
@@ -60,7 +61,7 @@ const STEPS: Step[] = [
     method: "cascade",
     show: "play",
     html: `<h2>When it can't</h2>
-      <p>Each SCC better than the next: $\lambda(K) > D(K)$, so nothing can be skipped. Same work as
+      <p>Each SCC better than the next: $\\lambda(K) > D(K)$, so nothing can be skipped. Same work as
       plain Karp.</p>`,
   },
   {
@@ -191,6 +192,7 @@ function main() {
   });
 
   playground($("#playground"));
+  examples($("#examples"));
 
   loadResults()
     .then((r) => ($("#tiles").innerHTML = tiles(r)))
