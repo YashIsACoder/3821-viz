@@ -154,6 +154,19 @@ button.open {
   display: none;
 }
 
+/* Four methods fit as a 2 × 2 grid on a phone, so none hides off the edge. */
+@media (max-width: 699px) {
+  .tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: visible;
+  }
+
+  .tabs button {
+    justify-content: center;
+    padding: 9px 8px;
+  }
+}
 
 .tabs button,
 .chip-m {
@@ -303,8 +316,15 @@ table.work tbody th {
   color: var(--ink);
 }
 
+table.work tbody th .small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
 table.work td {
-  min-width: 84px;
+  min-width: 72px;
 }
 
 .mini {

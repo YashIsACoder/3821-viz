@@ -171,7 +171,7 @@ export function workMatrix(bundle: Bundle, methods: Method[], info: MethodInfo):
   const most = Math.max(1, ...sccBased.flatMap((m) => [...per.get(m)!.values()].map((c) => c.work)));
   const comps = bundle.sccs.comps;
 
-  const head = sccBased.map((m) => `<th scope="col"><span class="swatch" style="--c:${info.colour(m)}"></span>${esc(info.name(m))}</th>`).join("");
+  const head = sccBased.map((m) => `<th scope="col"><span class="swatch" style="--c:${info.colour(m)}"></span>${esc(info.short(m))}</th>`).join("");
   const body = comps
     .map((states, c) => {
       const cells = sccBased
@@ -184,7 +184,7 @@ export function workMatrix(bundle: Bundle, methods: Method[], info: MethodInfo):
           return `<td><span class="mini" style="--c:${info.colour(m)}; width:${width}%"></span><span class="num">${cell.work}</span></td>`;
         })
         .join("");
-      return `<tr><th scope="row">SCC ${c}<span class="small"> · ${states.length} state${states.length === 1 ? "" : "s"}</span></th>${cells}</tr>`;
+      return `<tr><th scope="row">SCC ${c}<span class="small">${states.length} state${states.length === 1 ? "" : "s"}</span></th>${cells}</tr>`;
     })
     .join("");
 
