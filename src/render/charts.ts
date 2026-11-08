@@ -1,6 +1,6 @@
 // The comparison charts on the race page.
 //
-//   scoreboard     every graph, every method: total work on one log axis (a dot plot)
+//   scoreboard     every graph, every method: total work as bars, one card per graph
 //   ProgressChart  for one graph: states settled against work done, one step line per method
 //   workMatrix     for one graph: how much work each SCC cost each SCC-based method
 //
@@ -10,6 +10,7 @@ import type { Bundle, IndexEntry, Method } from "../lib/types";
 
 export interface MethodInfo {
   name: (m: Method) => string;
+  short: (m: Method) => string; // for tight spots: "Karp" rather than "SCC + Karp"
   colour: (m: Method) => string;
 }
 
@@ -17,62 +18,37 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 // ---- scoreboard --------------------------------------------------------------------------
 
+// One card per graph: a bar per method, scaled to the slowest method on that graph, with the
+// number beside it. Cards rather than one chart, so a phone can show them a row at a time.
 export function scoreboard(graphs: IndexEntry[], methods: Method[], info: MethodInfo, current: string): string {
-  const W = 360;
-  const left = 8;
-  const right = 14;
-  const rowH = 52;
-  const top = 26;
-  const all = graphs.flatMap((g) => methods.map((m) => g.work[m]).filter((w) => w > 0));
-  const lo = Math.pow(10, Math.floor(Math.log10(Math.min(...all))));
-  const hi = Math.pow(10, Math.ceil(Math.log10(Math.max(...all))));
-  const x = (w: number) => left + ((Math.log10(w) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (W - left - right);
-  const H = top + rowH * graphs.length + 6;
-
-  const ticks: string[] = [];
-  for (let t = lo; t <= hi; t *= 10) {
-    ticks.push(
-      `<line class="grid" x1="${x(t)}" x2="${x(t)}" y1="${top - 6}" y2="${H - 6}"/>` +
-        `<text class="tick" x="${x(t)}" y="${top - 12}" text-anchor="middle">${t.toLocaleString()}</text>`,
-    );
-  }
-
-  const rows = graphs
-    .map((g, i) => {
-      const y0 = top + i * rowH;
-      const cy = y0 + 32;
+  return graphs
+    .map((g) => {
       const works = methods.map((m) => g.work[m]);
       const best = Math.min(...works);
-      const winners = methods.filter((m) => g.work[m] === best);
-      // Methods that tie would hide each other, so stack them a little.
-      const dots = methods
+      const most = Math.max(1, ...works);
+      const tie = works.every((w) => w === best);
+      const bars = methods
         .map((m) => {
           const w = g.work[m];
-          const twins = methods.filter((o) => g.work[o] === w);
-          const dy = (twins.indexOf(m) - (twins.length - 1) / 2) * 7;
-          return `<circle class="dot" cx="${x(w)}" cy="${cy + dy}" r="6" fill="${info.colour(m)}"><title>${esc(info.name(m))}: ${w} relaxations</title></circle>`;
+          const least = w === best && !tie;
+          return (
+            `<span class="bar-name">${esc(info.short(m))}</span>` +
+            `<span class="bar-track"><span class="bar" style="--c:${info.colour(m)}; width:${Math.max(2, (100 * w) / most)}%"></span></span>` +
+            `<span class="bar-n${least ? " least" : ""}">${w}</span>`
+          );
         })
         .join("");
-      const span = `<line class="span" x1="${x(Math.min(...works))}" x2="${x(Math.max(...works))}" y1="${cy}" y2="${cy}"/>`;
-      const winner = winners.length === methods.length ? "all tie" : winners.map(info.name).join(", ").replace(/ \(ours\)/g, "");
+      const sccs = `${g.sccs} SCC${g.sccs === 1 ? "" : "s"}`;
       return (
-        `<g class="row${g.id === current ? " current" : ""}" data-id="${g.id}" tabindex="0" role="button" aria-label="Show ${esc(g.title)}">` +
-        `<rect class="hit" x="0" y="${y0 + 2}" width="${W}" height="${rowH - 4}" rx="10"/>` +
-        `<text class="name" x="${left}" y="${y0 + 15}">${esc(g.title)}</text>` +
-        span +
-        dots +
-        `<text class="best" x="${W - 4}" y="${y0 + 15}" text-anchor="end">${winners.length === methods.length ? "" : "least work: "}${esc(winner)}</text>` +
-        `</g>`
+        `<li><button type="button" class="card${g.id === current ? " current" : ""}" data-id="${g.id}"` +
+        `${g.id === current ? ' aria-current="true"' : ""}>` +
+        `<span class="card-head"><span class="card-title">${esc(g.title)}</span>` +
+        `<span class="card-meta">${g.n} states · ${sccs}${tie ? " · all tie" : ""}</span></span>` +
+        `<span class="bars">${bars}</span>` +
+        `</button></li>`
       );
     })
     .join("");
-
-  return (
-    `<svg class="scoreboard" viewBox="0 0 ${W} ${H}" role="group" aria-label="Relaxations per method on every graph">` +
-    ticks.join("") +
-    rows +
-    `</svg>`
-  );
 }
 
 // ---- progress chart ----------------------------------------------------------------------

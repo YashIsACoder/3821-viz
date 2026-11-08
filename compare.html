@@ -27,11 +27,11 @@
       <section class="block" id="board">
         <h2>Ten graphs, four methods</h2>
         <p class="small">
-          Each dot is one method's total work on one graph (further left is less work; the axis is
-          logarithmic). Tap a graph to race the methods on it.
+          Total relaxations each method needed. Bars are scaled to the slowest method on that graph,
+          and the least work is in green. Tap a graph to race the methods on it.
         </p>
-        <div class="method-key" id="method-key"></div>
-        <div id="scoreboard"></div>
+        <ol class="board" id="scoreboard"></ol>
+        <p class="small swipe-hint">Swipe sideways for all ten →</p>
         <div class="open-row">
           <button type="button" class="open" id="open">Open your own run…</button>
           <span class="small">a JSON file from <code>dmdp viz</code>, or drop it anywhere on the page</span>

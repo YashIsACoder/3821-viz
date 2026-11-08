@@ -27,8 +27,10 @@ const ABOUT: Record<string, string> = {
   hybrid: "Our cascade's cheapest bound first; SCCs it can't skip go to Howard, with Karp taking over if Howard runs long.",
   howard: "Policy iteration (Howard, 1960): pick actions, see what they earn, switch to better ones, repeat.",
 };
+const SHORT: Record<string, string> = { scc_karp: "Karp", cascade: "Cascade", hybrid: "Hybrid", howard: "Howard" };
 const info: MethodInfo = {
   name: (m) => NAMES[m] ?? m,
+  short: (m) => SHORT[m] ?? m,
   colour: (m) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)"),
 };
 
@@ -42,10 +44,14 @@ let currentId = "";
 
 function drawScoreboard() {
   const methods = METHODS.filter((m) => graphs.every((g) => g.work[m] !== undefined));
-  $("#method-key").innerHTML = methods
-    .map((m) => `<span class="key-chip"><span class="swatch" style="--c:${info.colour(m)}"></span>${info.name(m)}</span>`)
-    .join("");
-  $("#scoreboard").innerHTML = scoreboard(graphs, methods, info, currentId);
+  const board = $("#scoreboard");
+  board.innerHTML = scoreboard(graphs, methods, info, currentId);
+  // In the swipeable row on a phone, bring the current graph into view without moving the page.
+  const card = board.querySelector<HTMLElement>(".card.current");
+  if (card && board.scrollWidth > board.clientWidth) {
+    const pad = parseFloat(getComputedStyle(board).paddingLeft);
+    board.scrollLeft = card.parentElement!.offsetLeft - board.offsetLeft - pad;
+  }
 }
 
 function showGraph(bundle: Bundle) {
@@ -207,17 +213,9 @@ async function main() {
   graphs = index.graphs;
   $("#backend").textContent = `Data from dmdp at ${index.backend.commit}.`;
 
-  const board = $("#scoreboard");
-  const choose = (event: Event) => {
-    const row = (event.target as Element).closest<SVGGElement>("g.row");
-    if (row?.dataset.id) select(row.dataset.id, true);
-  };
-  board.addEventListener("click", choose);
-  board.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      choose(event);
-    }
+  $("#scoreboard").addEventListener("click", (event) => {
+    const card = (event.target as Element).closest<HTMLElement>(".card");
+    if (card?.dataset.id) select(card.dataset.id, true);
   });
 
   const src = params.get("src");

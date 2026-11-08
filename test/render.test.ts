@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { frames } from "../src/lib/timeline";
 import { methodsOf, toBundle, type Bundle } from "../src/lib/types";
+import { scoreboard } from "../src/render/charts";
 import { GraphView } from "../src/render/graphView";
 import { boundChart, karpTable } from "../src/render/panels";
 
@@ -49,5 +50,19 @@ describe("opening your own runs", () => {
     run.trace = [...run.trace, { step: 99, type: "new_idea", id: 1, relaxations: 7 } as never];
     const list = frames(toBundle(run, "x"), "cascade");
     expect(list.some((f) => f.caption === "new idea (SCC 1)")).toBe(true);
+  });
+});
+
+describe("the scoreboard", () => {
+  const index = JSON.parse(readFileSync("public/data/index.json", "utf8"));
+  const info = { name: (m: string) => m, short: (m: string) => m, colour: () => "red" };
+
+  it("has a card per graph and marks the least work", () => {
+    const list = document.createElement("ol");
+    list.innerHTML = scoreboard(index.graphs, ["scc_karp", "cascade", "hybrid", "howard"], info, "chain-rise");
+    expect(list.querySelectorAll(".card")).toHaveLength(index.graphs.length);
+    const rise = list.querySelector<HTMLElement>('[data-id="chain-rise"]')!;
+    expect(rise.getAttribute("aria-current")).toBe("true");
+    expect([...rise.querySelectorAll(".least")].map((n) => n.textContent)).toEqual(["11"]);
   });
 });
