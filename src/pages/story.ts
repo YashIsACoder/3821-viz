@@ -8,6 +8,7 @@ import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
 import { loadResults, tiles } from "../render/findings";
+import { playground } from "../render/playground";
 import { GraphView } from "../render/graphView";
 import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
@@ -26,80 +27,63 @@ const STEPS: Step[] = [
     graph: "proposal",
     method: "scc_karp",
     show: "start",
-    html: `<h2>A deterministic MDP is a graph</h2>
-      <p>States are the circles. Each arrow is an action: take it and you move along it and earn its reward.
-      Pick one action per state (a <em>policy</em>) and follow it forever, and you end up going round a cycle.
-      Your long-run average reward, the <em>gain</em> $g^*$, is that cycle's mean.</p>
-      <p>The shaded rings are the strongly connected components (SCCs): groups of states that can all reach
-      each other. Once you leave an SCC you can never come back.</p>`,
+    html: `<h2>An MDP is a graph</h2>
+      <p>Circles are states, arrows are moves with their rewards. Rings group states that can all reach
+      each other: strongly connected components (SCCs). Leave one and you can't come back.</p>`,
   },
   {
     graph: "proposal",
     method: "scc_karp",
     show: "play",
-    html: `<h2>Solve the SCCs, sinks first</h2>
-      <p>The standard pipeline works backwards from the SCCs you can't leave. For each SCC $K$:</p>
-      <p>$\\lambda(K)$ is the best cycle mean inside it, found with Karp's algorithm (1978). Its table holds
-      $D_k(v)$, the best reward of a $k$-step walk into $v$.</p>
-      <p>$D(K)$, the <em>exit value</em>, is the best gain of an SCC you can step into.</p>
-      <p>Then $g^*(K) = \\max(\\lambda(K), D(K))$: stay on your best cycle, or leave for something better.</p>`,
+    html: `<h2>Solve SCCs, last ones first</h2>
+      <p>Each SCC $K$ is worth $g^* = \max(\lambda(K), D(K))$: its best loop $\lambda$ (Karp's
+      algorithm), or the best place you can leave to, $D$.</p>`,
   },
   {
     graph: "proposal",
     method: "cascade",
     show: "play",
-    html: `<h2>Our idea: prove you can skip it</h2>
-      <p>Karp costs $O(n_K m_K)$ per SCC. But if some cheap upper bound $U \\ge \\lambda(K)$ is already
-      $\\le D(K)$, no cycle inside $K$ can beat leaving, so $g^*(K) = D(K)$ and Karp can stop.</p>
-      <p>The cascade tries the largest edge weight first, then $\\delta_k = \\max_v (D_k(v) - D_{k-1}(v))$ for
-      $k = 1, 2, 4, \\dots$, reusing the rows it builds. Here $\\delta_2 = 3 \\le D = 3$.</p>`,
+    html: `<h2>Our idea: prove it can't win</h2>
+      <p>If a cheap upper bound on $\lambda(K)$ is already $\le D(K)$, no loop inside beats leaving.
+      Skip Karp. Here $\delta_2 = 3 \le D = 3$.</p>`,
   },
   {
     graph: "chain-rise",
     method: "cascade",
     show: "play",
     html: `<h2>When it pays off</h2>
-      <p>Five SCCs in a chain, each worse than the one after it. Every SCC except the sink is skipped by the
-      first, cheapest test.</p>
-      <p>The cascade does 12 relaxations here; running Karp on every SCC takes 60.</p>`,
+      <p>Each SCC worse than the next: all but the last are skipped. <b>12</b> relaxations instead of
+      <b>60</b>.</p>`,
   },
   {
     graph: "chain-fall",
     method: "cascade",
     show: "play",
     html: `<h2>When it can't</h2>
-      <p>Reverse the chain and every SCC beats everything after it: $\\lambda(K) > D(K)$. A sound bound can
-      never be below $\\lambda(K)$, so nothing can be skipped, and the cascade ends up doing exactly the
-      same work as plain Karp.</p>
-      <p>The bound also stalls on SCCs whose best cycles are long, which we measured separately (experiment E7).</p>`,
+      <p>Each SCC better than the next: $\lambda(K) > D(K)$, so nothing can be skipped. Same work as
+      plain Karp.</p>`,
   },
   {
     graph: "asadi",
     method: "howard",
     show: "play",
-    html: `<h2>A different approach: Howard</h2>
-      <p>Policy iteration (Howard, 1960) ignores the SCC structure. It starts from a policy, works out what it
-      earns, switches every state to a better action, and repeats. It is often fast in practice, but on this
-      graph from Asadi et al. (2025) it needs 606 relaxations to Karp's 144.</p>`,
+    html: `<h2>Another way: Howard</h2>
+      <p>Pick moves, see what they earn, switch to better ones, repeat. Usually fast, but on this graph
+      <b>606</b> relaxations to Karp's <b>144</b>.</p>`,
   },
   {
     graph: "dasdan",
     method: "hybrid",
     show: "play",
-    html: `<h2>Our hybrid: test first, then Howard</h2>
-      <p>The hybrid puts the two ideas together. Going SCC by SCC, it tries the cascade's cheapest bound
-      first. Any SCC that can't be skipped goes to Howard, and Karp takes over if Howard runs too long.</p>
-      <p>On this graph from Dasdan's benchmark suite it skips two SCCs and needs 95 relaxations, the fewest
-      of the four methods. Karp on every SCC takes 103, and Howard on the whole graph 214.</p>`,
+    html: `<h2>Our hybrid: skip test, then Howard</h2>
+      <p>On a benchmark graph: <b>95</b> relaxations. Karp needs 103, Howard 214.</p>`,
   },
   {
     graph: "dasdan",
     method: "hybrid",
     show: "end",
-    html: `<h2>Race them yourself</h2>
-      <p>Every method gets the same exact gains. They differ in how much work it takes, and which one
-      wins depends on the graph.</p>
-      <p><a href="./compare.html">Watch all four on ten graphs →</a></p>`,
+    html: `<h2>Same answer, different work</h2>
+      <p><a class="button" href="./compare.html">Race all four on ten graphs →</a></p>`,
   },
 ];
 
@@ -206,8 +190,7 @@ function main() {
     if (timer !== null) play(shown); // carry on from here at the new speed
   });
 
-  // The basics use a little maths too.
-  document.querySelectorAll<HTMLElement>("#mdp dd").forEach((dd) => (dd.innerHTML = typeset(dd.innerHTML)));
+  playground($("#playground"));
 
   loadResults()
     .then((r) => ($("#tiles").innerHTML = tiles(r)))

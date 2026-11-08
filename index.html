@@ -17,111 +17,76 @@
         <a href="./about.html">About</a>
       </nav>
 
-      <header class="hero">
-        <div class="eyebrow">COMP3821 research project</div>
-        <h1>Skipping the work</h1>
-        <p class="lede">
-          Picture a board game that never ends. On every square you pick a move, and each move takes you
-          to another square and pays you some points. Since you play forever, what counts is your
-          <em>average</em> score per move. From each square, what is the best average you can get?
-        </p>
-        <p class="lede">
-          You always end up going round some loop again and again, so the answer comes down to finding
-          the loops with the best average. This page shows the standard way to find them, and our idea:
-          a cheap test that proves whole parts of the board aren't worth searching.
-        </p>
-        <div class="cta">
-          <a class="button" href="#mdp">Start with the basics ↓</a>
-          <a class="button ghost" href="./compare.html">Race the methods →</a>
+      <header class="hero hero-split">
+        <div>
+          <div class="eyebrow">COMP3821 research project</div>
+          <h1>Skipping the work</h1>
+          <p class="lede">Every move pays some points, and you play forever. Which moves give the best
+            <em>average</em>? Try it.</p>
+          <div class="cta">
+            <a class="button" href="#how">See how it's solved ↓</a>
+            <a class="button ghost" href="./compare.html">Race the methods →</a>
+          </div>
         </div>
+        <div class="playground" id="playground"></div>
       </header>
 
       <section class="block" id="mdp">
         <div class="eyebrow">The basics</div>
-        <h2>What is an MDP?</h2>
-        <p class="lede">
-          A <em>Markov decision process</em> (MDP) is the standard way to describe a problem where you
-          make one decision after another and each one changes what you can do next. It is the model
-          underneath reinforcement learning. It has five parts:
-        </p>
-        <dl class="terms">
-          <div><dt>States</dt><dd>Where you can be: a square on the board, a machine's settings, a robot's position.</dd></div>
-          <div><dt>Actions</dt><dd>What you can do in each state. Each one moves you to a next state.</dd></div>
-          <div><dt>Rewards</dt><dd>What each action pays, or costs if it is negative.</dd></div>
-          <div><dt>Policy</dt><dd>A rule that picks an action in every state. This is what you are trying to find.</dd></div>
-          <div><dt>Gain</dt><dd>The average reward per step a policy earns in the long run. The best one is written $g^*$.</dd></div>
-        </dl>
+        <h2>That was a Markov decision process</h2>
+        <ul class="parts">
+          <li><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13" class="i-state"/><text x="20" y="25" text-anchor="middle">A</text></svg><b>States</b><span>where you are</span></li>
+          <li><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 20 H30" class="i-line"/><path d="M28 14 L36 20 L28 26z" class="i-fill"/></svg><b>Actions</b><span>the moves</span></li>
+          <li><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="6" y="12" width="28" height="16" rx="8" class="i-pill"/><text x="20" y="24.5" text-anchor="middle">+5</text></svg><b>Rewards</b><span>what a move pays</span></li>
+          <li><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M5 20 H30" class="i-line on"/><path d="M28 14 L36 20 L28 26z" class="i-fill on"/></svg><b>Policy</b><span>one move per state</span></li>
+          <li><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M4 30 C12 6 20 30 28 18 S34 20 36 20" class="i-line gold"/><path d="M4 20 H36" class="i-dash"/></svg><b>Gain</b><span>the long-run average</span></li>
+        </ul>
 
-        <div class="compare-grid">
-          <div>
-            <h3>Deterministic or random</h3>
-            <p>In general an action leads to a next state <em>at random</em>, like a robot whose wheels
-              sometimes slip. We study the <em>deterministic</em> case, where each action always leads to
-              the same place. Then an MDP is just a graph: states are dots, actions are arrows, and every
-              policy ends up going round a loop forever.</p>
-          </div>
-          <div>
-            <h3>Average or discounted</h3>
-            <p>Most reinforcement learning <em>discounts</em> the future: a reward next year counts for
-              less than one today. For tasks that never stop, like running a data centre or a factory,
-              the natural score is the long-run <em>average</em> instead. It needs different tools, and
-              it's the one we use.</p>
-          </div>
-          <div>
-            <h3>Learning or planning</h3>
-            <p>A reinforcement-learning agent has to learn by trial and error, because it doesn't know
-              the MDP. <em>Planning</em> is the other half: when the MDP is known, compute the best policy
-              outright. Learning agents plan inside the model they have learned, so faster, exact
-              planning helps both.</p>
-          </div>
+        <div class="contrasts">
+          <figure>
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <circle cx="22" cy="45" r="11" class="i-state"/><path d="M34 45 H80" class="i-line on"/><path d="M78 40 L86 45 L78 50z" class="i-fill on"/><circle cx="96" cy="45" r="9" class="i-state"/>
+              <circle cx="132" cy="45" r="11" class="i-state"/><path d="M144 42 L188 18" class="i-line"/><path d="M144 48 L188 72" class="i-line"/><circle cx="198" cy="14" r="9" class="i-state"/><circle cx="198" cy="76" r="9" class="i-state"/>
+              <text x="160" y="22" class="i-small">70%</text><text x="160" y="78" class="i-small">30%</text>
+            </svg>
+            <figcaption><b>Deterministic</b>, not random: a move always lands in the same place, so the MDP is a graph.</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <g class="bars-even"><rect x="6" y="30" width="12" height="40"/><rect x="22" y="30" width="12" height="40"/><rect x="38" y="30" width="12" height="40"/><rect x="54" y="30" width="12" height="40"/><rect x="70" y="30" width="12" height="40"/><rect x="86" y="30" width="12" height="40"/></g>
+              <g class="bars-fade"><rect x="120" y="30" width="12" height="40"/><rect x="136" y="44" width="12" height="26"/><rect x="152" y="53" width="12" height="17"/><rect x="168" y="59" width="12" height="11"/><rect x="184" y="63" width="12" height="7"/><rect x="200" y="66" width="12" height="4"/></g>
+              <text x="52" y="86" text-anchor="middle" class="i-small">average</text><text x="166" y="86" text-anchor="middle" class="i-small">discounted</text>
+            </svg>
+            <figcaption><b>Average</b>, not discounted: step 1,000 counts as much as step 1. Right for systems that never stop.</figcaption>
+          </figure>
+          <figure>
+            <svg viewBox="0 0 220 90" aria-hidden="true">
+              <circle cx="24" cy="30" r="10" class="i-state"/><circle cx="80" cy="30" r="10" class="i-state"/><circle cx="52" cy="70" r="10" class="i-state"/><path d="M35 30 H69 M74 39 L58 61 M44 62 L30 40" class="i-line on"/>
+              <circle cx="140" cy="30" r="10" class="i-state"/><circle cx="196" cy="30" r="10" class="i-state"/><circle cx="168" cy="70" r="10" class="i-state"/><path d="M151 30 H185 M190 39 L174 61 M160 62 L146 40" class="i-line dashed"/>
+              <text x="168" y="34" text-anchor="middle" class="i-q">?</text>
+            </svg>
+            <figcaption><b>Planning</b>, the other half of reinforcement learning: the MDP is known, so compute the best policy exactly.</figcaption>
+          </figure>
         </div>
       </section>
 
       <section class="block" id="why">
         <div class="eyebrow">Why it matters</div>
-        <h2>The same question, in many places</h2>
-        <p class="lede">
-          “Which loop has the best average?” is the <em>maximum mean cycle</em> problem. Solving a
-          deterministic MDP's average reward is exactly this problem, and it turns up well beyond games:
-        </p>
-        <div class="why-grid">
-          <div class="why">
-            <h3>Reinforcement learning</h3>
-            <p>Agents that run for good, such as controllers and schedulers, are scored by average reward.
-              Planners often work in a learned model that is deterministic, as MuZero's is.</p>
-          </div>
-          <div class="why">
-            <h3>Chips</h3>
-            <p>In a digital circuit, the loop with the longest average delay sets how fast the clock can
-              tick. The real-world graphs we test on are circuits.</p>
-          </div>
-          <div class="why">
-            <h3>Production and pipelines</h3>
-            <p>In a production line or a program that repeats, the slowest repeating cycle caps how much
-              gets done per hour.</p>
-          </div>
-          <div class="why">
-            <h3>Checking systems</h3>
-            <p>Tools that verify software and hardware compute long-run averages, such as the share of time
-              a system is up, on MDP models of it.</p>
-          </div>
-          <div class="why">
-            <h3>Games</h3>
-            <p>Mean-payoff games, used to design systems that keep behaving well forever, are the
-              two-player version of the same question.</p>
-          </div>
-          <div class="why">
-            <h3>Network flows</h3>
-            <p>A classic way to find the cheapest flow through a network repeatedly cancels the cycle with
-              the best mean, so it runs this problem in a loop.</p>
-          </div>
-        </div>
+        <h2>The best loop shows up everywhere</h2>
+        <ul class="uses">
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="18" r="9"/><path d="M14 40 C14 30 34 30 34 40"/><path d="M38 10 l4 -4 M40 18 h6 M38 26 l4 4"/></svg><b>Reinforcement learning</b><span>agents scored by average reward</span></li>
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="12" y="12" width="24" height="24" rx="3"/><path d="M18 6v6M24 6v6M30 6v6M18 36v6M24 36v6M30 36v6M6 18h6M6 24h6M6 30h6M36 18h6M36 24h6M36 30h6"/></svg><b>Chips</b><span>the slowest loop sets the clock speed</span></li>
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 40V22l10 6v-6l10 6v-6l10 6V10h6v30z"/></svg><b>Production lines</b><span>the slowest cycle caps output</span></li>
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6l16 6v12c0 10-7 16-16 18C15 40 8 34 8 24V12z"/><path d="M17 24l5 5 10-10"/></svg><b>Verification</b><span>how often a system stays up</span></li>
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="8" width="32" height="32" rx="6"/><circle cx="17" cy="17" r="2.5"/><circle cx="31" cy="31" r="2.5"/><circle cx="24" cy="24" r="2.5"/></svg><b>Games</b><span>mean-payoff games, two players</span></li>
+          <li><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="10" cy="24" r="4"/><circle cx="38" cy="12" r="4"/><circle cx="38" cy="36" r="4"/><circle cx="24" cy="24" r="4"/><path d="M14 24h6M27 21l8-7M27 27l8 7M38 16v16"/></svg><b>Network flows</b><span>cheapest flow, by cancelling cycles</span></li>
+        </ul>
       </section>
 
-      <section class="block story-block">
+      <section class="block story-block" id="how">
         <div class="eyebrow">How it works</div>
-        <h2>From a graph to the answer, and what we skip</h2>
-        <p class="small">Scroll to step through it. The picture follows along; ↻ plays a step again.</p>
+        <h2>Solve it piece by piece, and skip what can't win</h2>
+        <p class="small">Scroll, and the picture follows.</p>
         <div class="story">
           <div class="stage" aria-live="polite">
             <div class="stage-head small">
@@ -142,42 +107,19 @@
       </section>
 
       <section class="block" id="project">
-        <div class="eyebrow">The project</div>
-        <h2>What we did</h2>
+        <div class="eyebrow">What we did</div>
         <div class="project-grid">
-          <a class="project" href="./about.html#proofs">
-            <b>A skip test, proved safe</b>
-            <span>Cheap upper bounds that rule out an SCC before solving it, with proofs that skipping is
-              sound, never changes the answer, and costs no more than Karp in the worst case.</span>
-          </a>
-          <a class="project" href="./compare.html?g=dasdan">
-            <b>A hybrid solver</b>
-            <span>The cheapest test first, then Howard's method on each SCC that is left, with Karp as a
-              safety net when Howard runs long.</span>
-          </a>
-          <a class="project" href="./about.html#code">
-            <b>A C++ library</b>
-            <span><code>dmdp</code>: Karp, the cascade, Howard and the hybrid, all in exact fractions, with
-              a brute-force checker and the step-by-step recordings this site plays.</span>
-          </a>
-          <a class="project" href="./results.html">
-            <b>Seven experiments</b>
-            <span>136 graphs, from generated families to real circuits: is it exact, is it safe, when does
-              it help, and how does it compare with Howard?</span>
-          </a>
+          <a class="project" href="./about.html#proofs"><svg class="p-icon" viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="5" width="22" height="22" rx="4"/><path d="M10 16l4 4 8-8"/></svg><b>A skip test, proved safe</b><span>3 proofs: sound, exact, fast</span></a>
+          <a class="project" href="./compare.html?g=dasdan"><svg class="p-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 9h8l8 14h8M4 23h8l3-5M20 9h8"/></svg><b>A hybrid solver</b><span>skip test, then Howard</span></a>
+          <a class="project" href="./about.html#code"><svg class="p-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M12 5c-4 0-4 3-4 6s-1 5-4 5c3 0 4 2 4 5s0 6 4 6M20 5c4 0 4 3 4 6s1 5 4 5c-3 0-4 2-4 5s0 6-4 6"/></svg><b>A C++ library</b><span>4 solvers, exact fractions</span></a>
+          <a class="project" href="./results.html"><svg class="p-icon" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 27h22M9 27V17M16 27V8M23 27V13"/></svg><b>7 experiments</b><span>136 graphs, real circuits too</span></a>
         </div>
       </section>
 
       <section class="block" id="found">
         <div class="eyebrow">What we found</div>
-        <h2>Exact, safe, and sometimes a lot less work</h2>
         <div class="tiles" id="tiles"></div>
-        <p class="lede">
-          Skipping pays off when SCCs further along are better than the ones before them, and does
-          nothing when they are worse. On real circuits most SCCs have no cycle at all, so there is little
-          to skip, and Howard's method is still the one to beat there.
-        </p>
-        <p><a href="./results.html">All the results, experiment by experiment →</a></p>
+        <p><a href="./results.html">Every result, with charts →</a></p>
       </section>
 
       <footer>
