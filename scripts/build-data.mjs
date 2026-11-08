@@ -82,6 +82,47 @@ function build(entry, scratch) {
   return { id: entry.id, title: entry.title, blurb: entry.blurb, graph, sccs, methods, bruteforce };
 }
 
+// ---- headline results, read from the experiment summaries in the backend repo ------------
+// The story page quotes these, so they always match what the experiments actually found.
+
+function table(file) {
+  const rows = readFileSync(join(REPO, file), "utf8")
+    .split("\n")
+    .filter((line) => line.startsWith("|") && !/^\|[-| ]+\|$/.test(line))
+    .map((line) => line.slice(1, -1).split("|").map((cell) => cell.trim()));
+  const [head, ...body] = rows;
+  return body.map((cells) => Object.fromEntries(head.map((h, i) => [h, cells[i]])));
+}
+
+function experimentResults() {
+  const e1 = table("experiments/e1/e1_summary.md")[0];
+  const e2 = table("experiments/e2/e2_summary.md");
+  const e3 = table("experiments/e3/e3_summary.md");
+  return {
+    agreement: {
+      graphs: Number(e1["all methods agree"]),
+      bruteforce: Number(e1["also checked against brute force"]),
+      disagreements: Number(e1["disagreements"]),
+      source: "experiments/e1/e1_summary.md",
+    },
+    pruning: {
+      families: e2.map((r) => ({
+        family: r.family,
+        graphs: Number(r.graphs),
+        saved: parseFloat(r["relaxations saved"]),
+        skipped: parseFloat(r["fraction skipped"]),
+      })),
+      source: "experiments/e2/e2_summary.md",
+    },
+    soundness: {
+      graphs: e3.reduce((n, r) => n + Number(r.graphs), 0),
+      violations: e3.reduce((n, r) => n + Number(r.violations), 0),
+      skips: e3.reduce((n, r) => n + Number(r["did skip"]), 0),
+      source: "experiments/e3/e3_summary.md",
+    },
+  };
+}
+
 const manifest = JSON.parse(readFileSync(join(ROOT, "graphs.json"), "utf8"));
 const backend = {
   commit: git("rev-parse", "--short", "HEAD"),
@@ -115,5 +156,6 @@ try {
   rmSync(scratch, { recursive: true, force: true });
 }
 writeFileSync(join(OUT, "index.json"), JSON.stringify({ backend, graphs: index }, null, 1));
+writeFileSync(join(OUT, "results.json"), JSON.stringify({ backend, ...experimentResults() }, null, 1));
 if (update) writeFileSync(REF_FILE, `${backend.commit}\n`); // only once every graph built cleanly
 console.log(`wrote ${index.length} graphs from backend ${backend.commit}`);

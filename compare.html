@@ -2,10 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#141414" />
     <title>Race the Solvers</title>
-    <meta name="description" content="Watch mean-cycle solvers for deterministic MDPs work through the same graph, side by side." />
+    <meta name="description" content="Four mean-cycle solvers for deterministic MDPs, raced on ten graphs. Same exact answers, very different amounts of work." />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   </head>
   <body>
@@ -16,28 +16,58 @@
       </nav>
 
       <header class="hero">
-        <h1>Race the methods</h1>
+        <div class="eyebrow">Race the methods</div>
+        <h1>Four ways to the same answer</h1>
         <p class="lede">
-          Different ways to find the best long-run average reward in every state. The clock counts
-          <em>relaxations</em>, the basic unit of work, so the race is fair: the method that finishes
-          first did the least work.
+          Every method here finds the exact same gains. What differs is the work: the clock counts
+          <em>relaxations</em> (one look at one edge), so the method that finishes first really did the least.
         </p>
       </header>
 
-      <div class="picker" role="group" aria-label="Choose a graph"></div>
-      <section class="graph-info">
-        <h2 id="graph-title"></h2>
-        <p class="lede" id="graph-blurb"></p>
+      <section class="block" id="board">
+        <h2>Ten graphs, four methods</h2>
+        <p class="small">
+          Each dot is one method's total work on one graph (further left is less work; the axis is
+          logarithmic). Tap a graph to race the methods on it.
+        </p>
+        <div class="method-key" id="method-key"></div>
+        <div id="scoreboard"></div>
+        <div class="open-row">
+          <button type="button" class="open" id="open">Open your own run…</button>
+          <span class="small">a JSON file from <code>dmdp viz</code>, or drop it anywhere on the page</span>
+        </div>
       </section>
 
-      <div class="race-bar">
-        <div id="player"></div>
-        <div class="bars" id="bars"></div>
-      </div>
+      <section class="block" id="race">
+        <div class="eyebrow" id="graph-eyebrow"></div>
+        <h2 id="graph-title"></h2>
+        <p class="lede" id="graph-blurb"></p>
 
-      <div class="tabs" role="tablist" aria-label="Method to show"></div>
-      <div class="panels" id="panels"></div>
-      <p class="small" id="verdict"></p>
+        <div class="race-layout">
+          <div class="stage">
+            <div class="tabs" role="tablist" aria-label="Whose run to watch"></div>
+            <div id="graph"></div>
+            <div id="legend"></div>
+            <p class="caption" id="caption" aria-live="polite"></p>
+            <div class="detail" id="detail"></div>
+          </div>
+
+          <div class="side">
+            <h3>Who pins down the answer first?</h3>
+            <p class="small">
+              States whose gain is already the right one, against work done. Steep and early is good.
+              Tap the chart to jump the clock.
+            </p>
+            <div class="chips" id="chips"></div>
+            <div id="progress"></div>
+
+            <h3>Where the work went</h3>
+            <p class="small">Relaxations each SCC cost. A skipped SCC cost little or nothing.</p>
+            <div id="matrix"></div>
+            <p class="verdict" id="verdict"></p>
+          </div>
+        </div>
+      </section>
 
       <footer>
         <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
@@ -47,6 +77,11 @@
         </div>
       </footer>
     </div>
+
+    <div class="dock">
+      <div class="wrap"><div id="player"></div></div>
+    </div>
+
     <script type="module" src="./src/pages/compare.ts"></script>
   </body>
 </html>

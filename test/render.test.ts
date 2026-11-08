@@ -6,7 +6,7 @@ import { methodsOf, toBundle, type Bundle } from "../src/lib/types";
 import { GraphView } from "../src/render/graphView";
 import { boundChart, karpTable } from "../src/render/panels";
 
-const ids = readdirSync("public/data").filter((f) => f.endsWith(".json") && f !== "index.json");
+const ids = readdirSync("public/data").filter((f) => f.endsWith(".json") && !["index.json", "results.json"].includes(f));
 const load = (file: string): Bundle => JSON.parse(readFileSync(`public/data/${file}`, "utf8"));
 
 describe("rendering every curated graph", () => {

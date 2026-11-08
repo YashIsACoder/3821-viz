@@ -1,0 +1,53 @@
+{
+ "backend": {
+  "commit": "725f13a",
+  "dirty": false
+ },
+ "agreement": {
+  "graphs": 136,
+  "bruteforce": 54,
+  "disagreements": 0,
+  "source": "experiments/e1/e1_summary.md"
+ },
+ "pruning": {
+  "families": [
+   {
+    "family": "rising",
+    "graphs": 18,
+    "saved": 96,
+    "skipped": 100
+   },
+   {
+    "family": "falling",
+    "graphs": 18,
+    "saved": 0,
+    "skipped": 0
+   },
+   {
+    "family": "giant",
+    "graphs": 9,
+    "saved": 0,
+    "skipped": 16.7
+   },
+   {
+    "family": "small",
+    "graphs": 9,
+    "saved": 65.4,
+    "skipped": 69.5
+   },
+   {
+    "family": "periodic",
+    "graphs": 9,
+    "saved": 4.6,
+    "skipped": 5.6
+   }
+  ],
+  "source": "experiments/e2/e2_summary.md"
+ },
+ "soundness": {
+  "graphs": 63,
+  "violations": 0,
+  "skips": 3037,
+  "source": "experiments/e3/e3_summary.md"
+ }
+}

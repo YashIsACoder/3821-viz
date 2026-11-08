@@ -7,9 +7,11 @@ import "katex/dist/katex.min.css";
 import "../style.css";
 import "./compare.css";
 import { frameAtWork, frames, type Frame } from "../lib/timeline";
-import { loadBundle, loadIndex, methodsOf, METHODS, toBundle, type Bundle, type Method } from "../lib/types";
+import { loadBundle, loadIndex, methodsOf, METHODS, toBundle, type Bundle, type IndexEntry, type Method } from "../lib/types";
 import { rich } from "../render/caption";
+import { ProgressChart, scoreboard, workMatrix, type MethodInfo } from "../render/charts";
 import { GraphView } from "../render/graphView";
+import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
 import { Player } from "../render/player";
 
@@ -20,36 +22,116 @@ const NAMES: Record<string, string> = {
   howard: "Howard",
 };
 const ABOUT: Record<string, string> = {
-  scc_karp: "Split into SCCs, run Karp's algorithm on every one, combine sinks first.",
-  cascade: "The same, but skip Karp on an SCC when a cheap bound proves it can't beat leaving.",
-  hybrid: "The cascade's cheap test first; SCCs it can't skip go to Howard, with Karp as a fallback if Howard runs long.",
-  howard: "Policy iteration: evaluate a policy, switch to better actions, repeat.",
+  scc_karp: "The standard pipeline: split into SCCs, run Karp's algorithm on every one, combine sinks first.",
+  cascade: "Our idea: the same, but first try cheap bounds that can prove an SCC isn't worth solving, and skip it.",
+  hybrid: "Our cascade's cheapest bound first; SCCs it can't skip go to Howard, with Karp taking over if Howard runs long.",
+  howard: "Policy iteration (Howard, 1960): pick actions, see what they earn, switch to better ones, repeat.",
 };
-const nameOf = (m: Method) => NAMES[m] ?? m;
-const colourOf = (m: Method) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)");
+const info: MethodInfo = {
+  name: (m) => NAMES[m] ?? m,
+  colour: (m) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)"),
+};
 
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
-
-interface Lane {
-  method: Method;
-  frames: Frame[];
-  view: GraphView;
-  panel: HTMLElement;
-  caption: HTMLElement;
-  detail: HTMLElement;
-  work: HTMLElement;
-  shown: number;
-}
+const narrow = () => window.matchMedia("(max-width: 699px)").matches;
 
 let player: Player | null = null;
 let focus: Method = "cascade";
+let graphs: IndexEntry[] = [];
+let currentId = "";
 
-function setFocus(method: Method) {
-  focus = method;
-  document.querySelectorAll<HTMLElement>(".panel").forEach((p) => p.classList.toggle("focused", p.dataset.method === method));
-  document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((b) => {
-    b.setAttribute("aria-selected", String(b.dataset.method === method));
+function drawScoreboard() {
+  const methods = METHODS.filter((m) => graphs.every((g) => g.work[m] !== undefined));
+  $("#method-key").innerHTML = methods
+    .map((m) => `<span class="key-chip"><span class="swatch" style="--c:${info.colour(m)}"></span>${info.name(m)}</span>`)
+    .join("");
+  $("#scoreboard").innerHTML = scoreboard(graphs, methods, info, currentId);
+}
+
+function showGraph(bundle: Bundle) {
+  const methods = methodsOf(bundle);
+  if (!methods.length) throw new Error("this file has no runs in it");
+  if (!methods.includes(focus)) focus = methods.includes("cascade") ? "cascade" : methods[0];
+
+  $("#graph-eyebrow").textContent = `${bundle.graph.n} states · ${bundle.graph.edges.length} actions · ${bundle.sccs.comps.length} SCCs`;
+  $("#graph-title").textContent = bundle.title;
+  $("#graph-blurb").innerHTML = rich(bundle.blurb);
+  document.title = `${bundle.title} · Race the Solvers`;
+
+  // Leave room under the graph for the caption, and the dock below that.
+  const view = new GraphView($("#graph"), bundle, () => window.innerHeight * (narrow() ? 0.55 : 0.62));
+  $("#legend").replaceChildren(legend(view.gains, !narrow()));
+
+  const lanes = methods.map((method) => ({ method, frames: frames(bundle, method) }));
+  const totals = new Map(lanes.map((l) => [l.method, l.frames[l.frames.length - 1].work]));
+  const ticks = [...new Set(lanes.flatMap((l) => l.frames.map((f) => f.work)))].sort((a, b) => a - b);
+  const most = Math.max(1, ...totals.values());
+
+  // Tabs pick whose run the big graph shows; the clock is shared.
+  const tabs = $(".tabs");
+  tabs.innerHTML = methods
+    .map((m) => `<button type="button" role="tab" data-method="${m}" style="--c:${info.colour(m)}"><span class="swatch"></span>${info.name(m)}</button>`)
+    .join("");
+  tabs.hidden = methods.length < 2;
+
+  const chips = $("#chips");
+  chips.innerHTML = methods
+    .map((m) => `<button type="button" class="chip-m" data-method="${m}" style="--c:${info.colour(m)}"><span class="swatch"></span><span class="who">${info.name(m)}</span><span class="w"></span></button>`)
+    .join("");
+
+  $("#matrix").innerHTML = workMatrix(bundle, methods, info);
+
+  const verdict = $("#verdict");
+  const agreement = verdictFor(bundle, methods);
+  let tick = 0;
+  const shown = new Map<Method, Frame>();
+
+  const progress = new ProgressChart($("#progress"), lanes, bundle.graph.n, info, (work) => {
+    player?.pause();
+    let i = 0;
+    while (i + 1 < ticks.length && ticks[i + 1] <= work) i++;
+    player?.go(i);
   });
+
+  const paintStage = () => {
+    const frame = shown.get(focus)!;
+    const index = lanes.find((l) => l.method === focus)!.frames.indexOf(frame);
+    view.show(frame);
+    $("#caption").innerHTML = index === 0 ? `<span class="small">${ABOUT[focus] ?? ""}</span>` : rich(frame.caption);
+    $("#detail").replaceChildren(...[karpTable(frame, bundle), boundChart(frame)].filter((x): x is HTMLElement => x !== null));
+    document.querySelectorAll<HTMLElement>("[data-method]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.method === focus)));
+  };
+
+  const draw = (t: number): string => {
+    tick = t;
+    const work = ticks[t];
+    for (const lane of lanes) shown.set(lane.method, lane.frames[frameAtWork(lane.frames, work)]);
+    paintStage();
+    progress.update(work, shown);
+    for (const lane of lanes) {
+      const frame = shown.get(lane.method)!;
+      const done = frame === lane.frames[lane.frames.length - 1];
+      const chip = chips.querySelector<HTMLElement>(`[data-method="${lane.method}"]`)!;
+      chip.querySelector(".w")!.textContent = done ? `${totals.get(lane.method)} ✓` : `${frame.work}`;
+      chip.classList.toggle("done", done);
+    }
+    verdict.textContent = t === ticks.length - 1 ? agreement : "";
+    return `${work} / ${most}`;
+  };
+
+  const pick = (event: Event) => {
+    const button = (event.target as HTMLElement).closest<HTMLElement>("[data-method]");
+    if (!button?.dataset.method) return;
+    focus = button.dataset.method;
+    draw(tick);
+  };
+  tabs.onclick = pick;
+  chips.onclick = pick;
+
+  player?.pause();
+  // About 1.5 s a step at 1×, so each caption can be read; long races get a little quicker.
+  const delay = Math.max(700, Math.min(1500, 60000 / ticks.length));
+  player = new Player($("#player"), ticks.length, draw, delay);
 }
 
 function sameGains(a: string[], b: string[]) {
@@ -59,117 +141,31 @@ function sameGains(a: string[], b: string[]) {
 function verdictFor(bundle: Bundle, methods: Method[]): string {
   const first = bundle.methods[methods[0]].result.gain;
   const odd = methods.filter((m) => !sameGains(bundle.methods[m].result.gain, first));
-  if (odd.length) return `Warning: ${odd.map(nameOf).join(", ")} disagree${odd.length === 1 ? "s" : ""} with ${nameOf(methods[0])} on some gains.`;
-  const all = methods.length === 1 ? nameOf(methods[0]) : `All ${methods.length} methods agree on every state's gain`;
-  if (!bundle.bruteforce) return methods.length === 1 ? "" : `${all}.`;
+  if (odd.length) return `Warning: ${odd.map(info.name).join(", ")} disagree${odd.length === 1 ? "s" : ""} with ${info.name(methods[0])} on some gains.`;
+  if (methods.length === 1) return "";
+  const all = `✓ All ${methods.length} methods found exactly the same gain in every state`;
+  if (!bundle.bruteforce) return `${all}.`;
   return sameGains(bundle.bruteforce, first)
-    ? `${all}, and so does brute force over every policy.`
+    ? `${all}, and so did brute force over every possible policy.`
     : "Warning: brute force finds different gains.";
 }
 
-function showGraph(bundle: Bundle) {
-  const methods = methodsOf(bundle);
-  if (!methods.length) throw new Error("this file has no runs in it");
-  if (!methods.includes(focus)) focus = methods.includes("cascade") ? "cascade" : methods[0];
+// ---- choosing a graph, or opening your own run -------------------------------------------
 
-  $("#graph-title").textContent = bundle.title;
-  $("#graph-blurb").innerHTML = rich(bundle.blurb);
-  document.title = `${bundle.title} · Race the Solvers`;
-
-  const tabs = $(".tabs");
-  tabs.innerHTML = methods
-    .map((m) => `<button type="button" role="tab" data-method="${m}" style="--c: ${colourOf(m)}">${nameOf(m)}</button>`)
-    .join("");
-  tabs.hidden = methods.length < 2;
-
-  const panels = $("#panels");
-  panels.replaceChildren();
-  // Four lanes read better as a 2 x 2 grid than as 3 + 1.
-  panels.style.setProperty("--lanes", String(methods.length === 4 ? 2 : Math.min(methods.length, 3)));
-  const narrow = window.matchMedia("(max-width: 899px)").matches;
-
-  const lanes: Lane[] = methods.map((method) => {
-    const panel = document.createElement("section");
-    panel.className = "panel";
-    panel.dataset.method = method;
-    panel.style.setProperty("--c", colourOf(method));
-    panel.innerHTML = `
-      <div class="panel-head">
-        <span class="swatch"></span><strong></strong>
-        <span class="work small"></span>
-      </div>
-      <p class="small about"></p>
-      <div class="graph-slot"></div>
-      <p class="caption"></p>
-      <div class="detail"></div>`;
-    panel.querySelector("strong")!.textContent = nameOf(method);
-    panel.querySelector(".about")!.textContent = ABOUT[method] ?? "";
-    panels.append(panel);
-    // A long chain reads better top to bottom on a phone.
-    const vertical = narrow && bundle.graph.n > 4 && bundle.sccs.comps.length > 2;
-    return {
-      method,
-      frames: frames(bundle, method),
-      view: new GraphView(panel.querySelector(".graph-slot")!, bundle, vertical),
-      panel,
-      caption: panel.querySelector(".caption")!,
-      detail: panel.querySelector(".detail")!,
-      work: panel.querySelector(".work")!,
-      shown: -1,
-    };
-  });
-  setFocus(focus);
-
-  // Ticks: every amount of work at which some method's picture changes.
-  const totals = lanes.map((l) => l.frames[l.frames.length - 1].work);
-  const ticks = [...new Set(lanes.flatMap((l) => l.frames.map((f) => f.work)))].sort((a, b) => a - b);
-  const most = Math.max(1, ...totals);
-
-  const bars = $("#bars");
-  bars.innerHTML = lanes
-    .map(
-      (l) => `<div class="bar" style="--c: ${colourOf(l.method)}">
-        <span class="bar-name"></span>
-        <span class="bar-track"><span class="bar-fill"></span></span>
-        <span class="bar-value"></span></div>`,
-    )
-    .join("");
-  lanes.forEach((l, i) => (bars.children[i].querySelector(".bar-name")!.textContent = nameOf(l.method)));
-
-  const verdict = $("#verdict");
-  const agreement = verdictFor(bundle, methods);
-
-  const draw = (tick: number): string => {
-    const work = ticks[tick];
-    lanes.forEach((lane, i) => {
-      const index = frameAtWork(lane.frames, work);
-      const frame = lane.frames[index];
-      const done = index === lane.frames.length - 1;
-      if (index !== lane.shown) {
-        lane.shown = index;
-        lane.view.show(frame);
-        lane.caption.innerHTML = index === 0 ? "Not started." : rich(frame.caption);
-        lane.detail.replaceChildren(...[karpTable(frame, bundle), boundChart(frame)].filter((x): x is HTMLElement => x !== null));
-      }
-      lane.work.textContent = done ? `done · ${totals[i]} relaxations` : `${frame.work} relaxations`;
-      const bar = bars.children[i] as HTMLElement;
-      (bar.querySelector(".bar-fill") as HTMLElement).style.width = `${(100 * Math.min(work, totals[i])) / most}%`;
-      bar.querySelector(".bar-value")!.textContent = `${Math.min(work, totals[i])}${done ? " ✓" : ""}`;
-      bar.classList.toggle("done", done);
-    });
-    verdict.textContent = tick === ticks.length - 1 ? agreement : "";
-    return `work ${work} / ${most}`;
-  };
-
-  player?.pause();
-  const delay = Math.max(350, Math.min(1100, 24000 / ticks.length));
-  player = new Player($("#player"), ticks.length, draw, delay);
+async function select(id: string, scroll: boolean) {
+  currentId = id;
+  drawScoreboard();
+  const url = new URL(window.location.href);
+  url.searchParams.delete("src");
+  url.searchParams.set("g", id);
+  window.history.replaceState(null, "", url);
+  showGraph(await loadBundle(id));
+  if (scroll) $("#race").scrollIntoView({ behavior: "smooth" });
 }
-
-// ---- opening your own runs -----------------------------------------------------------
 
 function showError(message: string) {
   $("#verdict").textContent = `Could not open that: ${message}`;
+  $("#race").scrollIntoView();
 }
 
 async function openFiles(files: FileList | File[]) {
@@ -178,8 +174,10 @@ async function openFiles(files: FileList | File[]) {
   try {
     const data = await Promise.all(list.map(async (f) => JSON.parse(await f.text())));
     const name = list.length === 1 ? list[0].name.replace(/\.json$/i, "") : "Your runs";
-    document.querySelectorAll(".picker button[data-id]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    currentId = "";
+    drawScoreboard();
     showGraph(toBundle(data.length === 1 ? data[0] : data, name));
+    $("#race").scrollIntoView({ behavior: "smooth" });
   } catch (error) {
     showError((error as Error).message);
   }
@@ -192,14 +190,8 @@ function setUpOpening() {
   input.multiple = true;
   input.hidden = true;
   input.addEventListener("change", () => input.files && openFiles(input.files));
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = "open";
-  button.textContent = "Open a run…";
-  button.title = "One or more JSON files from `dmdp viz`, for the same graph";
-  button.addEventListener("click", () => input.click());
-  $(".picker").append(button, input);
-
+  document.body.append(input);
+  $("#open").addEventListener("click", () => input.click());
   window.addEventListener("dragover", (event) => event.preventDefault());
   window.addEventListener("drop", (event) => {
     event.preventDefault();
@@ -209,30 +201,23 @@ function setUpOpening() {
 
 async function main() {
   Player.bindKeys(() => player);
+  setUpOpening();
   const params = new URLSearchParams(window.location.search);
   const index = await loadIndex();
+  graphs = index.graphs;
   $("#backend").textContent = `Data from dmdp at ${index.backend.commit}.`;
 
-  const picker = $(".picker");
-  picker.innerHTML = index.graphs.map((g) => `<button type="button" data-id="${g.id}">${g.title}</button>`).join("");
-  setUpOpening();
-
-  $(".tabs").addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest("button");
-    if (button?.dataset.method) setFocus(button.dataset.method);
-  });
-
-  const select = async (id: string) => {
-    picker.querySelectorAll("button[data-id]").forEach((b) => b.setAttribute("aria-pressed", String((b as HTMLElement).dataset.id === id)));
-    const url = new URL(window.location.href);
-    url.searchParams.delete("src");
-    url.searchParams.set("g", id);
-    window.history.replaceState(null, "", url);
-    showGraph(await loadBundle(id));
+  const board = $("#scoreboard");
+  const choose = (event: Event) => {
+    const row = (event.target as Element).closest<SVGGElement>("g.row");
+    if (row?.dataset.id) select(row.dataset.id, true);
   };
-  picker.addEventListener("click", (event) => {
-    const button = (event.target as HTMLElement).closest<HTMLElement>("button[data-id]");
-    if (button?.dataset.id) select(button.dataset.id);
+  board.addEventListener("click", choose);
+  board.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      choose(event);
+    }
   });
 
   const src = params.get("src");
@@ -240,6 +225,7 @@ async function main() {
     try {
       const response = await fetch(src);
       if (!response.ok) throw new Error(`${response.status} from ${src}`);
+      drawScoreboard();
       showGraph(toBundle(await response.json(), new URL(src, window.location.href).pathname.split("/").pop()?.replace(/\.json$/i, "") || "run"));
       return;
     } catch (error) {
@@ -247,8 +233,8 @@ async function main() {
     }
   }
   const wanted = params.get("g");
-  const first = index.graphs.find((g) => g.id === wanted) ?? index.graphs.find((g) => g.id === "chain-rise") ?? index.graphs[0];
-  await select(first.id);
+  const first = graphs.find((g) => g.id === wanted) ?? graphs.find((g) => g.id === "chain-rise") ?? graphs[0];
+  await select(first.id, Boolean(wanted));
 }
 
 main().catch((error) => showError(error.message));

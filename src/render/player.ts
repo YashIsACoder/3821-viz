@@ -1,8 +1,32 @@
-// Play / pause / step / scrub over ticks 0..count-1. Space and the arrow keys work too.
+// Play / pause / step / scrub over ticks 0..count-1, with a speed button. Space and the arrow
+// keys work too. The speed is remembered between graphs and pages.
+const SPEEDS = [0.5, 1, 2, 4];
+let speed = readSpeed();
+
+function readSpeed(): number {
+  try {
+    const saved = Number(localStorage.getItem("dmdp-viz-speed"));
+    return SPEEDS.includes(saved) ? saved : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function saveSpeed() {
+  try {
+    localStorage.setItem("dmdp-viz-speed", String(speed));
+  } catch {
+    // private browsing: the speed just isn't remembered
+  }
+}
+
+const label = (s: number) => (s === 0.5 ? "½×" : `${s}×`);
+
 export class Player {
   private tick = 0;
   private timer: number | null = null;
   private button: HTMLButtonElement;
+  private speedButton: HTMLButtonElement;
   private range: HTMLInputElement;
   private readout: HTMLElement;
 
@@ -10,7 +34,7 @@ export class Player {
     root: HTMLElement,
     private count: number,
     private onTick: (tick: number) => string, // returns the readout text
-    private delay = 900, // ms per tick; slow enough to read the caption
+    private delay = 1500, // ms per tick at 1×: slow enough to read the caption
   ) {
     root.classList.add("controls");
     root.innerHTML = `
@@ -18,15 +42,30 @@ export class Player {
       <button type="button" data-act="play" aria-label="Play">Play</button>
       <button type="button" data-act="next" aria-label="Step forward">›</button>
       <input type="range" min="0" step="1" aria-label="Position">
+      <button type="button" data-act="speed" class="speed" aria-label="Playback speed"></button>
       <span class="readout" aria-live="polite"></span>`;
     this.button = root.querySelector('[data-act="play"]')!;
+    this.speedButton = root.querySelector('[data-act="speed"]')!;
     this.range = root.querySelector("input")!;
     this.readout = root.querySelector(".readout")!;
     this.range.max = String(count - 1);
+    this.speedButton.textContent = label(speed);
 
-    root.querySelector('[data-act="back"]')!.addEventListener("click", () => this.step(-1));
-    root.querySelector('[data-act="next"]')!.addEventListener("click", () => this.step(1));
+    root.querySelector('[data-act="back"]')!.addEventListener("click", () => {
+      this.pause();
+      this.step(-1);
+    });
+    root.querySelector('[data-act="next"]')!.addEventListener("click", () => {
+      this.pause();
+      this.step(1);
+    });
     this.button.addEventListener("click", () => (this.timer === null ? this.play() : this.pause()));
+    this.speedButton.addEventListener("click", () => {
+      speed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length];
+      saveSpeed();
+      this.speedButton.textContent = label(speed);
+      if (this.timer !== null) this.schedule(); // pick up the new speed straight away
+    });
     this.range.addEventListener("input", () => {
       this.pause();
       this.go(Number(this.range.value));
@@ -67,10 +106,15 @@ export class Player {
     if (this.tick >= this.count - 1) this.go(0);
     this.button.textContent = "Pause";
     this.button.setAttribute("aria-label", "Pause");
+    this.schedule();
+  }
+
+  private schedule(): void {
+    if (this.timer !== null) window.clearInterval(this.timer);
     this.timer = window.setInterval(() => {
       if (this.tick >= this.count - 1) this.pause();
       else this.step(1);
-    }, this.delay);
+    }, this.delay / speed);
   }
 
   pause(): void {
