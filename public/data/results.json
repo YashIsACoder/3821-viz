@@ -49,5 +49,21 @@
   "violations": 0,
   "skips": 3037,
   "source": "experiments/e3/e3_summary.md"
+ },
+ "headToHead": {
+  "circuits": 36,
+  "hybridBeatsCascade": 35,
+  "hybridVsCascadeIscas": 5.8,
+  "howardBeatsHybrid": 34,
+  "howardVsHybridIscas": 2,
+  "asadi": {
+   "n": 1024,
+   "seconds": {
+    "howard": 349.6,
+    "hybrid": 3.5,
+    "cascade": 0.85
+   }
+  },
+  "source": "results/final/e6_head_to_head.csv"
  }
 }
