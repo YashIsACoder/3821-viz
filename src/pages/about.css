@@ -2,17 +2,33 @@
 
 .team {
   list-style: none;
-  margin: 12px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   display: grid;
-  gap: 18px;
-  max-width: 760px;
+  gap: 12px;
 }
 
 .team li {
   display: grid;
-  align-content: start;
-  gap: 2px;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+  padding: 16px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.avatar {
+  grid-row: span 2;
+  align-self: start;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid var(--c);
+  color: var(--c);
+  font: 600 17px var(--sans);
 }
 
 .team b {
@@ -20,15 +36,23 @@
   font-size: 19px;
 }
 
-.team span {
-  color: var(--ink-2);
-  font-size: 16px;
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-@media (min-width: 700px) {
+.tag {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font: 13px var(--sans);
+}
+
+@media (min-width: 800px) {
   .team {
     grid-template-columns: 1fr 1fr;
-    gap: 22px 32px;
   }
 }
 
@@ -116,10 +140,68 @@
   }
 }
 
+.chips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font: 14px var(--sans);
+}
+
+.chips-list li {
+  padding: 7px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  color: var(--ink-2);
+}
+
+.chips-list small {
+  margin-left: 4px;
+  color: var(--muted);
+}
+
+.chips-list.ours li {
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+.theorem .tex {
+  font-size: 17px;
+  color: var(--ink);
+}
+
 /* ---- references ---------------------------------------------------------------------- */
 
-.refs {
+.refs-box summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.refs-box summary::-webkit-details-marker {
+  display: none;
+}
+
+.refs-box summary h2 {
   margin: 0;
+}
+
+.refs-box summary::after {
+  content: "+ show";
+  font: 14px var(--sans);
+  color: var(--muted);
+}
+
+.refs-box[open] summary::after {
+  content: "− hide";
+}
+
+.refs {
+  margin: 16px 0 0;
   padding-left: 1.6em;
   max-width: 48em;
   font-size: 15px;
@@ -129,4 +211,8 @@
 .refs li {
   margin-bottom: 8px;
   padding-left: 4px;
+}
+
+.two-col + .small {
+  margin-top: 20px;
 }
