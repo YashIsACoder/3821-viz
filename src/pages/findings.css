@@ -1,0 +1,164 @@
+/* Experiment results, shared by the results page and the summary on the front page. */
+
+.families {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(90px, 1.3fr) 3em;
+  align-items: center;
+  gap: 10px 12px;
+  max-width: 720px;
+  font-family: var(--sans);
+  font-size: 14px;
+}
+
+.family {
+  display: contents;
+}
+
+/* On a phone each family's name sits above its bar, so the bars keep their length. */
+@media (max-width: 699px) {
+  .families {
+    grid-template-columns: minmax(0, 1fr) 3em;
+    gap: 2px 12px;
+  }
+
+  .family-name {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+  }
+}
+
+.family-name {
+  color: var(--ink-2);
+  line-height: 1.3;
+}
+
+.family-track {
+  height: 10px;
+}
+
+.family-bar {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--cascade);
+}
+
+.family-n {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+#circuits p {
+  max-width: 40em;
+  color: var(--ink-2);
+}
+
+.times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 4px 0 16px;
+  font-family: var(--sans);
+}
+
+.times div {
+  display: flex;
+  flex-direction: column;
+  min-width: 96px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.times b {
+  font-size: 20px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.times span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+
+#bounds-table {
+  max-width: 760px;
+}
+
+table.numbers {
+  border-collapse: collapse;
+  font-family: var(--sans);
+  font-size: 14px;
+  min-width: 100%;
+}
+
+table.numbers th,
+table.numbers td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+table.numbers thead th {
+  font-weight: 500;
+  font-size: 12.5px;
+  color: var(--muted);
+  vertical-align: bottom;
+}
+
+table.numbers tbody th {
+  font-weight: 400;
+  text-align: left;
+  color: var(--ink-2);
+}
+
+table.numbers th:first-child {
+  text-align: left;
+  padding-left: 0;
+  min-width: 9em;
+}
+
+@media (max-width: 499px) {
+  table.numbers th,
+  table.numbers td {
+    padding: 9px 6px;
+  }
+}
+
+.scaling {
+  display: block;
+  font-family: var(--sans);
+  overflow: visible;
+}
+
+.scaling .grid {
+  stroke: var(--line);
+}
+
+.scaling .tick {
+  font-size: 12px;
+  fill: var(--muted);
+}
+
+.scaling polyline {
+  fill: none;
+  stroke-width: 2;
+}
+
+.scaling circle {
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+
+.scaling .end {
+  font-size: 13px;
+  fill: var(--ink-2);
+}
+
+.scaling .end .v {
+  fill: var(--muted);
+}

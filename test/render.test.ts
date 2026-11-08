@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { frames } from "../src/lib/timeline";
 import { methodsOf, toBundle, type Bundle } from "../src/lib/types";
 import { scoreboard } from "../src/render/charts";
-import { circuits, familyBars, tiles } from "../src/render/findings";
+import { boundsTable, circuits, familyBars, scalingChart, tiles } from "../src/render/findings";
 import { GraphView } from "../src/render/graphView";
 import { boundChart, karpTable } from "../src/render/panels";
 
@@ -92,5 +92,13 @@ describe("what we found", () => {
     expect(box.querySelectorAll(".family")).toHaveLength(results.pruning.families.length);
     expect(box.textContent).toContain(`${results.agreement.graphs} graphs`);
     expect(box.textContent).toContain("350 s");
+  });
+
+  it("draws the scaling chart and the bounds table", () => {
+    const box = document.createElement("div");
+    box.innerHTML = scalingChart(results, 390) + boundsTable(results);
+    expect(box.querySelectorAll("polyline")).toHaveLength(3);
+    expect(box.querySelector("svg")!.getAttribute("width")).toBe("390");
+    expect(box.querySelectorAll("tbody tr")).toHaveLength(results.bounds.families.length);
   });
 });
