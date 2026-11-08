@@ -127,7 +127,42 @@ function headToHead() {
         cascade: round(asadi.cascade_ms / 1000, 2),
       },
     },
+    // How each method's time grows on Asadi's family, which is built to be hard for Howard.
+    scaling: rows
+      .filter((r) => r.family === "asadi")
+      .map((r) => ({
+        n: Number(r.n),
+        ms: { howard: round(+r.howard_ms), hybrid: round(+r.hybrid_a_ms), cascade: round(+r.cascade_ms) },
+      }))
+      .sort((a, b) => a.n - b.n),
     source: "results/final/e6_head_to_head.csv",
+  };
+}
+
+// E4: how many skips the cheapest test (largest edge) makes on its own, against all the tests.
+function bounds() {
+  const rows = table("experiments/e4/e4_summary.md");
+  const pick = (family, config) => rows.find((r) => r.family === family && r.config === config);
+  return {
+    families: ["rising", "small", "periodic"].map((family) => ({
+      family,
+      couldSkip: Number(pick(family, "both")["could skip"]),
+      maxEdge: Number(pick(family, "max_edge").skipped),
+      all: Number(pick(family, "both").skipped),
+    })),
+    source: "experiments/e4/e4_summary.md",
+  };
+}
+
+// E7: on SCCs whose best cycles are long, does δ_k ever come down to λ? And the window bound?
+function stall() {
+  const rows = table("experiments/e7/e7_summary.md").filter((r) => r.family === "planted" || r.family === "periodic");
+  const count = (col) => rows.reduce((n, r) => n + Number(r[col].split("/")[0]), 0);
+  return {
+    sccs: rows.reduce((n, r) => n + Number(r.instances), 0),
+    deltaReaches: count("δ = λ by k = 2N"),
+    windowReaches: count("window = λ by k = N"),
+    source: "experiments/e7/e7_summary.md",
   };
 }
 
@@ -158,6 +193,8 @@ function experimentResults() {
       source: "experiments/e3/e3_summary.md",
     },
     headToHead: headToHead(),
+    bounds: bounds(),
+    stall: stall(),
   };
 }
 
