@@ -7,6 +7,7 @@ import { frames, type Frame } from "../lib/timeline";
 import { nameOf } from "../lib/methods";
 import { loadBundle, loadIndex, type Bundle } from "../lib/types";
 import { math, rich } from "../render/caption";
+import { circuits, familyBars, loadResults, sources, tiles } from "../render/findings";
 import { GraphView } from "../render/graphView";
 import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
@@ -205,6 +206,14 @@ function main() {
     if (timer !== null) play(shown); // carry on from here at the new speed
   });
 
+  loadResults()
+    .then((r) => {
+      $("#tiles").innerHTML = tiles(r);
+      $("#families").innerHTML = familyBars(r);
+      $("#circuits").innerHTML = circuits(r);
+      $("#sources").innerHTML = sources(r);
+    })
+    .catch(() => ($("#found").hidden = true));
 
   loadIndex()
     .then((index) => ($("#backend").textContent = `Data from dmdp at ${index.backend.commit}.`))

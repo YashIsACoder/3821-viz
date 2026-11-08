@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#141414" />
     <title>Skipping the Work</title>
     <meta name="description" content="How to find the best long-run average reward in a deterministic MDP, and when you can safely skip most of the work." />
@@ -16,31 +16,84 @@
       </nav>
 
       <header class="hero">
+        <div class="eyebrow">COMP3821 research project</div>
         <h1>Skipping the work</h1>
         <p class="lede">
-          Finding the best long-run average reward in a deterministic MDP comes down to finding cycles
-          with the highest mean. This page walks through the standard way to do that, then our idea for
-          proving, cheaply, that whole parts of the graph don't need solving. Scroll to step through it.
+          Picture a board game that never ends. On every square you pick a move, and each move takes you
+          to another square and pays you some points. Since you play forever, what counts is your
+          <em>average</em> score per move. From each square, what is the best average you can get?
         </p>
+        <p class="lede">
+          You always end up going round some loop again and again, so the answer comes down to finding
+          the loops with the best average. This page shows the standard way to find them, and our idea:
+          a cheap test that proves whole parts of the board aren't worth searching.
+        </p>
+        <a class="scroll-cue" href="#why">Why it matters ↓</a>
       </header>
 
-      <div class="story">
-        <div class="stage" aria-live="polite">
-          <div class="stage-head small">
-            <span id="stage-title"></span>
-            <span class="stage-tools">
-              <span id="stage-work"></span>
-              <button type="button" class="tool" id="replay" aria-label="Play this step again">↻</button>
-              <button type="button" class="tool" id="speed" aria-label="Playback speed"></button>
-            </span>
+      <section class="block" id="why">
+        <h2>Why it matters</h2>
+        <p class="lede">
+          The “board” is a <em>deterministic Markov decision process</em> (DMDP), and the best average is
+          its <em>gain</em>. The same loop-finding problem turns up well outside games:
+        </p>
+        <div class="why-grid">
+          <div class="why">
+            <h3>Chips</h3>
+            <p>In a digital circuit, the loop with the longest average delay sets how fast the clock can tick.
+              The benchmark graphs we test on are real circuits.</p>
           </div>
-          <div id="stage-graph"></div>
-          <div id="stage-legend"></div>
-          <p class="caption" id="stage-caption"></p>
-          <div class="detail" id="stage-detail"></div>
+          <div class="why">
+            <h3>Pipelines</h3>
+            <p>In a production line or a program that repeats, the slowest repeating cycle caps how much
+              gets done per hour.</p>
+          </div>
+          <div class="why">
+            <h3>Games</h3>
+            <p>Mean-payoff games, used to design systems that run forever and keep behaving well, are the
+              two-player version of the same question.</p>
+          </div>
         </div>
-        <div class="steps" id="steps"></div>
-      </div>
+      </section>
+
+      <section class="block story-block">
+        <h2>How it works</h2>
+        <p class="small">Scroll to step through it. The picture follows along.</p>
+        <div class="story">
+          <div class="stage" aria-live="polite">
+            <div class="stage-head small">
+              <span id="stage-title"></span>
+              <span class="stage-tools">
+                <span id="stage-work"></span>
+                <button type="button" class="tool" id="replay" aria-label="Play this step again">↻</button>
+                <button type="button" class="tool" id="speed" aria-label="Playback speed"></button>
+              </span>
+            </div>
+            <div id="stage-graph"></div>
+            <div id="stage-legend"></div>
+            <p class="caption" id="stage-caption"></p>
+            <div class="detail" id="stage-detail"></div>
+          </div>
+          <div class="steps" id="steps"></div>
+        </div>
+      </section>
+
+      <section class="block" id="found">
+        <div class="eyebrow">What we found</div>
+        <h2>Exact, safe, and sometimes a lot less work</h2>
+        <div class="tiles" id="tiles"></div>
+
+        <h3>Where skipping helps, and where it doesn't</h3>
+        <p class="small">
+          Share of Karp's work the cascade avoided, by kind of graph. It only pays when SCCs further along
+          are better than the ones before them.
+        </p>
+        <div class="families" id="families"></div>
+
+        <h3>On real circuits</h3>
+        <div id="circuits"></div>
+        <p class="small" id="sources"></p>
+      </section>
 
       <footer>
         <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
