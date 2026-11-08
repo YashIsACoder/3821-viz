@@ -1,3 +1,7 @@
+.story-block {
+  padding-bottom: 0;
+}
+
 /* Steps scroll past a stage that stays put: beside them on wide screens, above them on phones. */
 .story {
   display: grid;
@@ -8,7 +12,8 @@
 .stage {
   order: 2;
   position: sticky;
-  top: 24px;
+  /* Roughly centred on a laptop, so the eye doesn't jump between the stage and the step. */
+  top: max(24px, calc(25vh - 80px));
   align-self: start;
   padding: 16px 0;
 }
@@ -20,11 +25,40 @@
   margin-bottom: 8px;
 }
 
+/* The graph view sizes itself to the room it's given (see story.ts), so no max-height here:
+   one would cut the labels off the bottom of the drawing. */
 #stage-graph {
-  width: auto;
-  max-width: 100%;
-  max-height: 52vh;
   margin: 0 auto;
+}
+
+.stage-head {
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+button.tool {
+  appearance: none;
+  min-width: 36px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-2);
+  font: 13px var(--sans);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button.tool[hidden] {
+  display: none;
 }
 
 .steps {
@@ -40,6 +74,14 @@
 
 .step.active {
   opacity: 1;
+}
+
+@media (min-width: 900px) {
+  .step {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 }
 
 .step:last-child {
@@ -61,10 +103,6 @@
     padding: 8px 0;
   }
 
-  #stage-graph {
-    max-height: 34vh;
-  }
-
   .stage .caption {
     font-size: 15px;
     min-height: 4.6em;
@@ -82,4 +120,110 @@
 /* Grid children would otherwise grow to fit a wide drawing and push text off the screen. */
 .story > * {
   min-width: 0;
+}
+
+/* ---- the basics ---------------------------------------------------------------------- */
+
+.terms {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0 8px;
+}
+
+.terms > div {
+  padding: 14px 16px;
+  border-left: 3px solid var(--gold);
+  background: var(--surface);
+  border-radius: 0 12px 12px 0;
+}
+
+.terms dt {
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.terms dd {
+  margin: 4px 0 0;
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--ink-2);
+}
+
+@media (min-width: 700px) {
+  .terms {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1000px) {
+  .terms {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.compare-grid {
+  display: grid;
+  gap: 8px 40px;
+  margin-top: 32px;
+}
+
+.compare-grid p {
+  color: var(--ink-2);
+  font-size: 16px;
+}
+
+@media (min-width: 900px) {
+  .compare-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ---- what we did --------------------------------------------------------------------- */
+
+.project-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.project {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+  transition: border-color 200ms;
+}
+
+.project:hover {
+  border-color: var(--edge);
+}
+
+.project b {
+  font-weight: 400;
+  font-size: 19px;
+}
+
+.project b::after {
+  content: " →";
+  color: var(--gold);
+}
+
+.project span {
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+@media (min-width: 700px) {
+  .project-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

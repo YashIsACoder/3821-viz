@@ -12,7 +12,9 @@
     <div class="wrap">
       <nav class="top">
         <a href="./index.html">The idea</a>
-        <a href="./compare.html" aria-current="page">Race the methods</a>
+        <a href="./compare.html" aria-current="page">The race</a>
+        <a href="./results.html">Results</a>
+        <a href="./about.html">About</a>
       </nav>
 
       <header class="hero">
@@ -27,10 +29,14 @@
       <section class="block" id="board">
         <h2>Ten graphs, four methods</h2>
         <p class="small">
-          Each dot is one method's total work on one graph (further left is less work; the axis is
-          logarithmic). Tap a graph to race the methods on it.
+          Each dot is one method's total work on one graph: further left is less work. The scale is logarithmic: equal gaps
+          are equal ratios, so 10 to 20 is as far as 100 to 200.
+          Tap a graph to race the methods on it.
         </p>
-        <div class="method-key" id="method-key"></div>
+        <div class="board-head">
+          <div class="method-key" id="method-key"></div>
+          <div id="score-axis"></div>
+        </div>
         <div id="scoreboard"></div>
         <div class="open-row">
           <button type="button" class="open" id="open">Open your own run…</button>
@@ -72,8 +78,9 @@
       <footer>
         <img src="./qr.svg" alt="QR code for this site" width="112" height="112" />
         <div class="small">
-          Built from the <code>dmdp</code> C++ library, COMP3821 research project.<br />
-          Every number here is computed by the library, not by this page. <span id="backend"></span>
+          A COMP3821 research project at UNSW Sydney by Yashwanth Madan, Khoi Nguyen Nguyen, Trung Hieu
+          Nguyen and Ting Bai. <a href="./about.html#team">Who did what →</a><br />
+          Every number here is computed by the <code>dmdp</code> C++ library, not by this page. <span id="backend"></span>
         </div>
       </footer>
     </div>

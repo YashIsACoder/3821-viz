@@ -94,6 +94,78 @@ function table(file) {
   return body.map((cells) => Object.fromEntries(head.map((h, i) => [h, cells[i]])));
 }
 
+function csv(file) {
+  const [head, ...body] = readFileSync(join(REPO, file), "utf8").trim().split("\n").map((line) => line.split(","));
+  return body.map((cells) => Object.fromEntries(head.map((h, i) => [h, cells[i]])));
+}
+
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+};
+const round = (x, places = 1) => Number(x.toFixed(places));
+
+// The hybrid against the cascade and Howard on real circuits, and on Asadi's hard family.
+// The ratios in the CSV are the other method's time over the hybrid's.
+function headToHead() {
+  const rows = csv("results/final/e6_head_to_head.csv");
+  const circuits = rows.filter((r) => r.family === "iscas" || r.family === "ibm");
+  const iscas = circuits.filter((r) => r.family === "iscas");
+  const asadi = rows.filter((r) => r.family === "asadi").sort((a, b) => Number(a.n) - Number(b.n)).pop();
+  return {
+    circuits: circuits.length,
+    hybridBeatsCascade: circuits.filter((r) => Number(r.hybrid_a_vs_cascade) > 1).length,
+    hybridVsCascadeIscas: round(median(iscas.map((r) => Number(r.hybrid_a_vs_cascade)))),
+    howardBeatsHybrid: circuits.filter((r) => Number(r.hybrid_a_vs_howard) < 1).length,
+    howardVsHybridIscas: round(median(iscas.map((r) => 1 / Number(r.hybrid_a_vs_howard)))),
+    asadi: {
+      n: Number(asadi.n),
+      seconds: {
+        howard: round(asadi.howard_ms / 1000),
+        hybrid: round(asadi.hybrid_a_ms / 1000),
+        cascade: round(asadi.cascade_ms / 1000, 2),
+      },
+    },
+    // How each method's time grows on Asadi's family, which is built to be hard for Howard.
+    scaling: rows
+      .filter((r) => r.family === "asadi")
+      .map((r) => ({
+        n: Number(r.n),
+        ms: { howard: round(+r.howard_ms), hybrid: round(+r.hybrid_a_ms), cascade: round(+r.cascade_ms) },
+      }))
+      .sort((a, b) => a.n - b.n),
+    source: "results/final/e6_head_to_head.csv",
+  };
+}
+
+// E4: how many skips the cheapest test (largest edge) makes on its own, against all the tests.
+function bounds() {
+  const rows = table("experiments/e4/e4_summary.md");
+  const pick = (family, config) => rows.find((r) => r.family === family && r.config === config);
+  return {
+    families: ["rising", "small", "periodic"].map((family) => ({
+      family,
+      couldSkip: Number(pick(family, "both")["could skip"]),
+      maxEdge: Number(pick(family, "max_edge").skipped),
+      all: Number(pick(family, "both").skipped),
+    })),
+    source: "experiments/e4/e4_summary.md",
+  };
+}
+
+// E7: on SCCs whose best cycles are long, does δ_k ever come down to λ? And the window bound?
+function stall() {
+  const rows = table("experiments/e7/e7_summary.md").filter((r) => r.family === "planted" || r.family === "periodic");
+  const count = (col) => rows.reduce((n, r) => n + Number(r[col].split("/")[0]), 0);
+  return {
+    sccs: rows.reduce((n, r) => n + Number(r.instances), 0),
+    deltaReaches: count("δ = λ by k = 2N"),
+    windowReaches: count("window = λ by k = N"),
+    source: "experiments/e7/e7_summary.md",
+  };
+}
+
 function experimentResults() {
   const e1 = table("experiments/e1/e1_summary.md")[0];
   const e2 = table("experiments/e2/e2_summary.md");
@@ -120,6 +192,9 @@ function experimentResults() {
       skips: e3.reduce((n, r) => n + Number(r["did skip"]), 0),
       source: "experiments/e3/e3_summary.md",
     },
+    headToHead: headToHead(),
+    bounds: bounds(),
+    stall: stall(),
   };
 }
 

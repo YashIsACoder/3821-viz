@@ -49,5 +49,92 @@
   "violations": 0,
   "skips": 3037,
   "source": "experiments/e3/e3_summary.md"
+ },
+ "headToHead": {
+  "circuits": 36,
+  "hybridBeatsCascade": 35,
+  "hybridVsCascadeIscas": 5.8,
+  "howardBeatsHybrid": 34,
+  "howardVsHybridIscas": 2,
+  "asadi": {
+   "n": 1024,
+   "seconds": {
+    "howard": 349.6,
+    "hybrid": 3.5,
+    "cascade": 0.85
+   }
+  },
+  "scaling": [
+   {
+    "n": 64,
+    "ms": {
+     "howard": 7.2,
+     "hybrid": 1,
+     "cascade": 0.3
+    }
+   },
+   {
+    "n": 128,
+    "ms": {
+     "howard": 99.1,
+     "hybrid": 7.2,
+     "cascade": 2
+    }
+   },
+   {
+    "n": 256,
+    "ms": {
+     "howard": 1426.7,
+     "hybrid": 54.8,
+     "cascade": 15.2
+    }
+   },
+   {
+    "n": 512,
+    "ms": {
+     "howard": 21728.3,
+     "hybrid": 425.4,
+     "cascade": 112.2
+    }
+   },
+   {
+    "n": 1024,
+    "ms": {
+     "howard": 349638.6,
+     "hybrid": 3536.2,
+     "cascade": 853.6
+    }
+   }
+  ],
+  "source": "results/final/e6_head_to_head.csv"
+ },
+ "bounds": {
+  "families": [
+   {
+    "family": "rising",
+    "couldSkip": 432,
+    "maxEdge": 432,
+    "all": 432
+   },
+   {
+    "family": "small",
+    "couldSkip": 3399,
+    "maxEdge": 2523,
+    "all": 2601
+   },
+   {
+    "family": "periodic",
+    "couldSkip": 54,
+    "maxEdge": 0,
+    "all": 3
+   }
+  ],
+  "source": "experiments/e4/e4_summary.md"
+ },
+ "stall": {
+  "sccs": 120,
+  "deltaReaches": 0,
+  "windowReaches": 118,
+  "source": "experiments/e7/e7_summary.md"
  }
 }

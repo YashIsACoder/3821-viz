@@ -17,62 +17,92 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 // ---- scoreboard --------------------------------------------------------------------------
 
-export function scoreboard(graphs: IndexEntry[], methods: Method[], info: MethodInfo, current: string): string {
-  const W = 360;
-  const left = 8;
-  const right = 14;
-  const rowH = 52;
-  const top = 26;
+// The board is drawn at the width it is shown at, so text stays the size of the page's text
+// instead of growing and shrinking with the screen. Narrow: title above the dots. Wide: titles
+// in a column on the left, like a table.
+export function scoreboard(graphs: IndexEntry[], methods: Method[], info: MethodInfo, current: string, width: number) {
+  const W = Math.max(280, Math.round(width));
+  const wide = W >= 640;
+  const r = 6;
+  const gap = 2 * r + 4; // centre to centre, so dots never touch
+  const plotL = wide ? 310 : 10;
+  const plotR = W - 22;
   const all = graphs.flatMap((g) => methods.map((m) => g.work[m]).filter((w) => w > 0));
-  const lo = Math.pow(10, Math.floor(Math.log10(Math.min(...all))));
-  const hi = Math.pow(10, Math.ceil(Math.log10(Math.max(...all))));
-  const x = (w: number) => left + ((Math.log10(w) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (W - left - right);
-  const H = top + rowH * graphs.length + 6;
-
-  const ticks: string[] = [];
-  for (let t = lo; t <= hi; t *= 10) {
-    ticks.push(
-      `<line class="grid" x1="${x(t)}" x2="${x(t)}" y1="${top - 6}" y2="${H - 6}"/>` +
-        `<text class="tick" x="${x(t)}" y="${top - 12}" text-anchor="middle">${t.toLocaleString()}</text>`,
-    );
+  // Fit the axis to the data, with gridlines at 1, 2, 5, 10, 20, 50, ... so it has no empty end.
+  const lo = Math.min(...all) / 1.3;
+  const hi = Math.max(...all) * 1.3;
+  const x = (w: number) => plotL + ((Math.log10(w) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (plotR - plotL);
+  const ticks: number[] = [];
+  for (let p = Math.pow(10, Math.floor(Math.log10(lo))); p <= hi; p *= 10) {
+    for (const t of [p, 2 * p, 5 * p]) if (t >= lo && t <= hi) ticks.push(t);
   }
+  const major = (t: number) => Number.isInteger(Math.log10(t));
 
+  const axis =
+    `<svg class="score-axis" width="${W}" height="22" viewBox="0 0 ${W} 22" aria-hidden="true">` +
+    ticks.map((t) => `<text class="tick" x="${x(t)}" y="15" text-anchor="middle">${t.toLocaleString("en")}</text>`).join("") +
+    (wide ? `<text class="tick" x="${plotL - 14}" y="15" text-anchor="end">relaxations</text>` : "") +
+    `</svg>`;
+
+  let y = 0;
   const rows = graphs
-    .map((g, i) => {
-      const y0 = top + i * rowH;
-      const cy = y0 + 32;
+    .map((g) => {
       const works = methods.map((m) => g.work[m]);
       const best = Math.min(...works);
       const winners = methods.filter((m) => g.work[m] === best);
-      // Methods that tie would hide each other, so stack them a little.
-      const dots = methods
-        .map((m) => {
-          const w = g.work[m];
-          const twins = methods.filter((o) => g.work[o] === w);
-          const dy = (twins.indexOf(m) - (twins.length - 1) / 2) * 7;
-          return `<circle class="dot" cx="${x(w)}" cy="${cy + dy}" r="6" fill="${info.colour(m)}"><title>${esc(info.name(m))}: ${w} relaxations</title></circle>`;
-        })
-        .join("");
-      const span = `<line class="span" x1="${x(Math.min(...works))}" x2="${x(Math.max(...works))}" y1="${cy}" y2="${cy}"/>`;
-      const winner = winners.length === methods.length ? "all tie" : winners.map(info.name).join(", ").replace(/ \(ours\)/g, "");
-      return (
-        `<g class="row${g.id === current ? " current" : ""}" data-id="${g.id}" tabindex="0" role="button" aria-label="Show ${esc(g.title)}">` +
-        `<rect class="hit" x="0" y="${y0 + 2}" width="${W}" height="${rowH - 4}" rx="10"/>` +
-        `<text class="name" x="${left}" y="${y0 + 15}">${esc(g.title)}</text>` +
-        span +
-        dots +
-        `<text class="best" x="${W - 4}" y="${y0 + 15}" text-anchor="end">${winners.length === methods.length ? "" : "least work: "}${esc(winner)}</text>` +
-        `</g>`
+
+      // Dots that would touch form a cluster, stacked in the key's order (blue, green, pink, orange),
+      // so a tie reads as a column and the order is the same on every row.
+      const sorted = [...methods].sort((a, b) => g.work[a] - g.work[b]);
+      const clusters: Method[][] = [];
+      let lastX = -Infinity;
+      for (const m of sorted) {
+        const cx = x(g.work[m]);
+        if (cx - lastX < gap) clusters[clusters.length - 1].push(m);
+        else clusters.push([m]);
+        lastX = cx;
+      }
+      const placed = clusters.flatMap((c) =>
+        c
+          .sort((a, b) => methods.indexOf(a) - methods.indexOf(b))
+          .map((m, i) => ({ m, cx: x(g.work[m]), lane: i - (c.length - 1) / 2 })),
       );
+      const lanes = placed.map((p) => p.lane);
+      const up = -Math.min(0, ...lanes);
+      const down = Math.max(0, ...lanes);
+      const band = (up + down + 1) * gap + 8;
+
+      const head = wide ? 0 : 44;
+      const h = Math.max(wide ? 58 : 0, head + band + 6);
+      const cy = wide ? y + h / 2 + (up - down) * (gap / 2) : y + head + 4 + gap / 2 + up * gap;
+      const bandTop = wide ? y + 4 : y + head;
+      const grid = ticks
+        .map((t) => `<line class="grid${major(t) ? " major" : ""}" x1="${x(t)}" x2="${x(t)}" y1="${bandTop}" y2="${wide ? y + h - 4 : bandTop + band}"/>`)
+        .join("");
+      const dots = placed
+        .map((p) => `<circle class="dot" cx="${p.cx}" cy="${cy + p.lane * gap}" r="${r}" fill="${info.colour(p.m)}"><title>${esc(info.name(p.m))}: ${g.work[p.m]} relaxations</title></circle>`)
+        .join("");
+      const names = winners.map((m) => info.name(m).replace(/ \(ours\)/, ""));
+      const least =
+        winners.length === methods.length
+          ? `all tie at ${best}`
+          : `least work: ${names.length > 1 ? names.slice(0, -1).join(", ") + " and " + names[names.length - 1] : names[0]} (${best})`;
+      const titleY = wide ? y + h / 2 - 3 : y + 20;
+      const label =
+        `<text class="name" x="${wide ? 14 : plotL}" y="${titleY}">${esc(g.title)}</text>` +
+        `<text class="best" x="${wide ? 14 : plotL}" y="${titleY + 18}">${esc(least)}</text>`;
+      const row =
+        `<g class="row${g.id === current ? " current" : ""}" data-id="${g.id}" tabindex="0" role="button" aria-label="Show ${esc(g.title)}: ${esc(least)}">` +
+        `<rect class="hit" x="1" y="${y + 1}" width="${W - 2}" height="${h - 2}" rx="10"/>` +
+        grid + label + dots +
+        `</g>`;
+      y += h + 4;
+      return row;
     })
     .join("");
 
-  return (
-    `<svg class="scoreboard" viewBox="0 0 ${W} ${H}" role="group" aria-label="Relaxations per method on every graph">` +
-    ticks.join("") +
-    rows +
-    `</svg>`
-  );
+  const board = `<svg class="scoreboard" width="${W}" height="${y}" viewBox="0 0 ${W} ${y}" role="group" aria-label="Relaxations per method on every graph">${rows}</svg>`;
+  return { axis, board };
 }
 
 // ---- progress chart ----------------------------------------------------------------------

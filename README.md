@@ -8,11 +8,17 @@ much work each one does.
 
 <img src="public/qr.svg" alt="QR code for the live site" width="140">
 
-- **The idea** (`index.html`): a short scroll-through story. A DMDP as a graph, SCCs, Karp's
-  table, our pruning cascade, and Howard's policy iteration for contrast.
-- **Race the methods** (`compare.html`): pick a graph and watch every method on it side by side:
-  SCC + Karp, our cascade, our hybrid (cascade bounds, then Howard with a Karp fallback) and Howard.
-  The clock counts relaxations, so the method that finishes first did the least work.
+- **The idea** (`index.html`): a plain-language opening, what an MDP is and how it relates to
+  reinforcement learning, where the problem turns up, then a short scroll-through story (a DMDP as a
+  graph, SCCs, Karp's table, our pruning cascade, Howard's policy iteration and our hybrid), what we
+  did and a summary of what we found.
+- **The race** (`compare.html`): a dot plot of every method's work on ten graphs; pick one and watch
+  every method on it side by side: SCC + Karp, our cascade, our hybrid (cascade bounds, then Howard
+  with a Karp fallback) and Howard. The clock counts relaxations, so the method that finishes first
+  did the least work.
+- **Results** (`results.html`): the experiments one by one (E1 to E7), with what they don't say.
+- **About** (`about.html`): who did what, what we proved, what was known before us, code and data,
+  and references.
 
 ## How it connects to the research repo
 
@@ -43,6 +49,9 @@ make -C ../COMP3821-Research/dmdp        # build the dmdp CLI
 npm run data                             # rebuild from the commit in backend.ref
 npm run data -- --update                 # or: rebuild from the backend as it is now, and pin that
 ```
+
+It also writes `public/data/results.json`, the experiment numbers the front and results pages quote,
+read from the research repo's experiment summaries and `results/final/e6_head_to_head.csv`.
 
 The script fails if the methods ever disagree on a gain, if brute force disagrees (on graphs
 small enough for it), or if a cascade trace doesn't report every SCC exactly once.
@@ -81,7 +90,7 @@ TypeScript and plain DOM/SVG, with KaTeX for the maths and no UI framework. The 
 | `src/lib/rational.ts` | exact fractions (`"7/3"`, `"-inf"`) with BigInt |
 | `src/lib/layout.ts` | positions: condensation levels left to right, each SCC on a ring |
 | `src/lib/timeline.ts` | folds a trace into frames, one per event, with captions |
-| `src/render/` | the graph, Karp's table, the bound chart, the play controls |
+| `src/render/` | the graph, Karp's table, the bound chart, the play controls, the race charts, the findings |
 | `src/pages/` | the story and the race |
 
 Pushing to `main` runs the tests and publishes to GitHub Pages

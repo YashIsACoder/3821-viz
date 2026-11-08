@@ -6,6 +6,7 @@
 import "katex/dist/katex.min.css";
 import "../style.css";
 import "./compare.css";
+import { nameOf } from "../lib/methods";
 import { frameAtWork, frames, type Frame } from "../lib/timeline";
 import { loadBundle, loadIndex, methodsOf, METHODS, toBundle, type Bundle, type IndexEntry, type Method } from "../lib/types";
 import { rich } from "../render/caption";
@@ -15,12 +16,6 @@ import { legend } from "../render/legend";
 import { boundChart, karpTable } from "../render/panels";
 import { Player } from "../render/player";
 
-const NAMES: Record<string, string> = {
-  scc_karp: "SCC + Karp",
-  cascade: "Cascade (ours)",
-  hybrid: "Hybrid (ours)",
-  howard: "Howard",
-};
 const ABOUT: Record<string, string> = {
   scc_karp: "The standard pipeline: split into SCCs, run Karp's algorithm on every one, combine sinks first.",
   cascade: "Our idea: the same, but first try cheap bounds that can prove an SCC isn't worth solving, and skip it.",
@@ -28,7 +23,7 @@ const ABOUT: Record<string, string> = {
   howard: "Policy iteration (Howard, 1960): pick actions, see what they earn, switch to better ones, repeat.",
 };
 const info: MethodInfo = {
-  name: (m) => NAMES[m] ?? m,
+  name: nameOf,
   colour: (m) => (METHODS.includes(m) ? `var(--${m})` : "var(--ink-2)"),
 };
 
@@ -45,7 +40,10 @@ function drawScoreboard() {
   $("#method-key").innerHTML = methods
     .map((m) => `<span class="key-chip"><span class="swatch" style="--c:${info.colour(m)}"></span>${info.name(m)}</span>`)
     .join("");
-  $("#scoreboard").innerHTML = scoreboard(graphs, methods, info, currentId);
+  const board = $("#scoreboard");
+  const { axis, board: svg } = scoreboard(graphs, methods, info, currentId, board.clientWidth);
+  $("#score-axis").innerHTML = axis;
+  board.innerHTML = svg;
 }
 
 function showGraph(bundle: Bundle) {
@@ -218,6 +216,13 @@ async function main() {
       event.preventDefault();
       choose(event);
     }
+  });
+  // Redraw at the new width, but only when the width really changed (phones resize on scroll).
+  let drawnAt = board.clientWidth;
+  window.addEventListener("resize", () => {
+    if (board.clientWidth === drawnAt || !graphs.length) return;
+    drawnAt = board.clientWidth;
+    drawScoreboard();
   });
 
   const src = params.get("src");
