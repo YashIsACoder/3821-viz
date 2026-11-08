@@ -58,7 +58,7 @@ function showGraph(bundle: Bundle) {
 
   // Leave room under the graph for the caption, and the dock below that.
   const view = new GraphView($("#graph"), bundle, () => window.innerHeight * (narrow() ? 0.55 : 0.62));
-  $("#legend").replaceChildren(legend(view.gains, !narrow()));
+  $("#legend").replaceChildren(legend(view.gains, false));
 
   const lanes = methods.map((method) => ({ method, frames: frames(bundle, method) }));
   const totals = new Map(lanes.map((l) => [l.method, l.frames[l.frames.length - 1].work]));

@@ -20,19 +20,12 @@
       <header class="hero">
         <div class="eyebrow">Race the methods</div>
         <h1>Four ways to the same answer</h1>
-        <p class="lede">
-          Every method here finds the exact same gains. What differs is the work: the clock counts
-          <em>relaxations</em> (one look at one edge), so the method that finishes first really did the least.
-        </p>
+        <p class="lede">Same exact answer, different amounts of work. The clock counts <em>relaxations</em>: one look at one edge.</p>
       </header>
 
       <section class="block" id="board">
         <h2>Ten graphs, four methods</h2>
-        <p class="small">
-          Each dot is one method's total work on one graph: further left is less work. The scale is logarithmic: equal gaps
-          are equal ratios, so 10 to 20 is as far as 100 to 200.
-          Tap a graph to race the methods on it.
-        </p>
+        <p class="small">Further left = less work. Tap a graph to race it.</p>
         <div class="board-head">
           <div class="method-key" id="method-key"></div>
           <div id="score-axis"></div>
@@ -60,15 +53,12 @@
 
           <div class="side">
             <h3>Who pins down the answer first?</h3>
-            <p class="small">
-              States whose gain is already the right one, against work done. Steep and early is good.
-              Tap the chart to jump the clock.
-            </p>
+            <p class="small">States solved against work done. Tap to jump the clock.</p>
             <div class="chips" id="chips"></div>
             <div id="progress"></div>
 
             <h3>Where the work went</h3>
-            <p class="small">Relaxations each SCC cost. A skipped SCC cost little or nothing.</p>
+            <p class="small">Relaxations per SCC. Skipped SCCs cost almost nothing.</p>
             <div id="matrix"></div>
             <p class="verdict" id="verdict"></p>
           </div>

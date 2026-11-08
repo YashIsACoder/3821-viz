@@ -1,4 +1,4 @@
-// "What am I looking at?": every mark on the graph, in words. Collapsed on phones until asked for.
+// "What am I looking at?": every mark on the graph, in words. Collapsed until asked for.
 import { GOLD, type GainScale } from "../lib/gainScale";
 import { math } from "./caption";
 
