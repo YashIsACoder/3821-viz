@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { frames } from "../src/lib/timeline";
 import { methodsOf, toBundle, type Bundle } from "../src/lib/types";
 import { scoreboard } from "../src/render/charts";
+import { circuits, familyBars, tiles } from "../src/render/findings";
 import { GraphView } from "../src/render/graphView";
 import { boundChart, karpTable } from "../src/render/panels";
 
@@ -64,5 +65,18 @@ describe("the scoreboard", () => {
     const rise = list.querySelector<HTMLElement>('[data-id="chain-rise"]')!;
     expect(rise.getAttribute("aria-current")).toBe("true");
     expect([...rise.querySelectorAll(".least")].map((n) => n.textContent)).toEqual(["11"]);
+  });
+});
+
+describe("what we found", () => {
+  const results = JSON.parse(readFileSync("public/data/results.json", "utf8"));
+
+  it("quotes the experiment numbers", () => {
+    const box = document.createElement("div");
+    box.innerHTML = tiles(results) + familyBars(results) + circuits(results);
+    expect(box.querySelectorAll(".tile")).toHaveLength(3);
+    expect(box.querySelectorAll(".family")).toHaveLength(results.pruning.families.length);
+    expect(box.textContent).toContain(`${results.agreement.graphs} graphs`);
+    expect(box.textContent).toContain("350 s");
   });
 });

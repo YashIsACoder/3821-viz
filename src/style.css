@@ -671,7 +671,7 @@ summary:focus-visible {
 
 .tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 10px;
   margin: 24px 0 8px;
 }
@@ -692,7 +692,7 @@ summary:focus-visible {
 .tile .what {
   display: block;
   margin-top: 6px;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.4;
   color: var(--ink-2);
 }
